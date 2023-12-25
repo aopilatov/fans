@@ -1,0 +1,43 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "ignorePatterns": [
+    "**/build"
+  ],
+  "plugins": [
+    "@typescript-eslint",
+    "import"
+  ],
+  "env": {
+    "node": true,
+    "jest": true,
+    "browser": false
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "no-unused-vars": "off",
+    "quotes": ["error", "single", {
+      "allowTemplateLiterals": true
+    }],
+    "semi": ["error", "always"],
+    "semi-spacing": ["error", {
+      "before": false,
+      "after": true
+    }],
+    "comma-dangle": ["error", "always-multiline"],
+    "object-curly-spacing": ["error", "always"],
+    "no-case-declarations": "off",
+    "no-extra-boolean-cast": "off",
+    "no-useless-catch": "off",
+    "no-constant-condition": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-inferrable-types": "off",
+    "@typescript-eslint/ban-types": "off"
+  }
+}

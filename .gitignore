@@ -1,0 +1,12 @@
+.idea
+.nx
+.next
+build
+dist
+node_modules
+tmp
+
+tsconfig.tsbuildinfo
+tsconfig.build.tsbuildinfo
+next-env.d.ts
+*.iml
