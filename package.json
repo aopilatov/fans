@@ -1,0 +1,6 @@
+{
+	"devDependencies": {
+		"vite-tsconfig-paths": "^4.2.2",
+		"vite-plugin-pages": "^0.32.0"
+	}
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@fans/frontend",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/frontend",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": [{ "projects": "dependencies", "target": "build" }],
+      "options": {
+        "outputPath": "apps/frontend/dist",
+        "main": "apps/frontend/src/main.ts",
+        "tsConfig": "apps/frontend/tsconfig.build.json",
+        "assets": ["apps/frontend/*.md"]
+      }
+    }
+  }
+}
