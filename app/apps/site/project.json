@@ -1,7 +1,7 @@
 {
-  "name": "@fans/frontend",
+  "name": "@fans/site",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/frontend",
+  "sourceRoot": "apps/site",
   "projectType": "library",
   "targets": {
     "build": {
@@ -9,10 +9,10 @@
       "outputs": ["{options.outputPath}"],
       "dependsOn": [{ "projects": "dependencies", "target": "build" }],
       "options": {
-        "outputPath": "apps/frontend/dist",
-        "main": "apps/frontend/src/main.ts",
-        "tsConfig": "apps/frontend/tsconfig.build.json",
-        "assets": ["apps/frontend/*.md"]
+        "outputPath": "apps/site/.next",
+        "main": "apps/site/src/main.ts",
+        "tsConfig": "apps/site/tsconfig.build.json",
+        "assets": ["apps/site/*.md"]
       }
     }
   }
