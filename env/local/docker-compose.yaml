@@ -1,0 +1,33 @@
+version: '3.9'
+name: 'fans'
+
+services:
+  uploads:
+    container_name: fans_uploads
+    restart: unless-stopped
+    image: nginx:1.25-alpine
+    ports:
+      - 0.0.0.0:3002:80
+    volumes:
+      - ./uploads.nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./tmp/files:/var/upload_files
+
+  postgres:
+    container_name: fans_postgres
+    restart: unless-stopped
+    image: postgres:16
+    ports:
+      - 0.0.0.0:5432:5432
+    volumes:
+      - ./tmp/db-data:/data/postgres
+    env_file:
+      - .env
+
+  redis:
+    container_name: fans_redis
+    restart: unless-stopped
+    image: redis:7.2
+    ports:
+      - 0.0.0.0:6379:6379
+    volumes:
+      - ./tmp/redis-data:/data

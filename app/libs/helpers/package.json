@@ -1,0 +1,12 @@
+{
+  "name": "@fans/helpers",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {},
+  "devDependencies": {
+    "@fans/types": "workspace:^"
+  }
+}

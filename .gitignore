@@ -1,6 +1,7 @@
 .idea
 .nx
 .next
+.env
 build
 dist
 node_modules
