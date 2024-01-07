@@ -13,6 +13,7 @@ import {
   AgencyAdminDbModel,
   CreatorDbModel,
   MediaDbModel,
+  SubscriptionLevelDbModel,
 } from '@/db/model';
 
 import { TelegramModule } from '@/microservice/telegram';
@@ -61,6 +62,7 @@ import { CreatorModule } from '@/microservice/creator';
           AgencyAdminDbModel,
           CreatorDbModel,
           MediaDbModel,
+          SubscriptionLevelDbModel,
         ],
       }),
     }),

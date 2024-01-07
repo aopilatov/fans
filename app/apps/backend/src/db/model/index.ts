@@ -3,3 +3,4 @@ export * from './agency.model';
 export * from './agencyAdmin.model';
 export * from './creator.model';
 export * from './media.model';
+export * from './subscriptionLevel.model';

@@ -6,6 +6,11 @@ export enum MEDIA_TYPE {
   VIDEO = 'video',
 }
 
+export enum MEDIA_TRANSFORMATION {
+  NONE = 'none',
+  BLUR = 'blur',
+}
+
 @Entity('media')
 export class MediaDbModel {
   @PrimaryGeneratedColumn('uuid')
@@ -26,6 +31,14 @@ export class MediaDbModel {
     nullable: false,
   })
   type: MEDIA_TYPE;
+
+  @Column({
+    name: 'transformation',
+    type: 'enum',
+    enum: MEDIA_TRANSFORMATION,
+    nullable: false,
+  })
+  transformation: MEDIA_TRANSFORMATION;
 
   @Column({
     name: 'width',

@@ -5,9 +5,11 @@ import { TelegramController } from './telegram.controller';
 import { TelegramHandlerMain } from './telegram.handler.main';
 import { TelegramHandlerCreator } from './telegram.handler.creator';
 import { BullModule } from '@nestjs/bull';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
+    CacheModule.register(),
     BullModule.registerQueue(
       { name: 'user' },
       { name: 'creator' }

@@ -1,16 +1,28 @@
 import { FastifyRequest } from 'fastify';
+import { Cache } from 'cache-manager';
+import { TelegramService } from '@/microservice/telegram';
 import * as _ from 'lodash';
 
 export class TelegramHandlerManager {
   private static instances: Record<string, TelegramHandlerManager> = {};
+  private static cacheService: Cache;
+  private static telegramService: TelegramService;
 
   private readonly commands: Record<string, string> = {};
   private readonly callbackQueries: Record<string, string> = {};
   private process: string = null;
 
-  public static getInstance(name: string): TelegramHandlerManager {
+  public static getInstance(name: string, cacheService?: Cache, telegramService?: TelegramService): TelegramHandlerManager {
     if (!_.has(TelegramHandlerManager.instances, name)) {
       _.set(TelegramHandlerManager.instances, name, new TelegramHandlerManager());
+    }
+
+    if (cacheService && !TelegramHandlerManager.cacheService) {
+      TelegramHandlerManager.cacheService = cacheService;
+    }
+
+    if (telegramService && !TelegramHandlerManager.telegramService) {
+      TelegramHandlerManager.telegramService = telegramService;
     }
 
     return _.get(TelegramHandlerManager.instances, name);
@@ -53,16 +65,23 @@ export class TelegramHandlerManager {
   }
 
   private async handleCallbackQuery(req: FastifyRequest, callbackQueryMessage: string): Promise<[string, Record<string, any>]> {
+    const userTgId = parseInt(_.get(req, 'body.callback_query.from.id', ''));
+    if (!userTgId) return;
+
+    const callbackQuery = await TelegramHandlerManager.telegramService.getCallback(userTgId, callbackQueryMessage);
+    await TelegramHandlerManager.telegramService.flushCallbacks(userTgId);
+    if (!callbackQuery) return;
+
     const callbackQueryKeys =  Object.keys(this.callbackQueries);
 
-    const key = callbackQueryKeys.find(item => callbackQueryMessage.startsWith(item));
+    const key = callbackQueryKeys.find(item => callbackQuery.name === item);
     if (!key) return;
 
     return [this.callbackQueries[key], {
       ..._.get(req, 'body.callback_query', {}),
       system: {
         type: 'callbackQuery',
-        cmd: callbackQueryMessage,
+        cmd: callbackQuery,
       },
     }];
   }
@@ -80,14 +99,14 @@ export class TelegramHandlerManager {
 
     if (_.has(req, 'body.message.photo')) {
       response['system'] = {
-        type: 'photo',
+        type: 'media',
         cmd: _.get(req, 'body.message.photo'),
       };
     }
 
     if (_.has(req, 'body.message.document')) {
       response['system'] = {
-        type: 'photo',
+        type: 'file',
         cmd: _.get(req, 'body.message.document'),
       };
     }

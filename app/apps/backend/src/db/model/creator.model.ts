@@ -58,17 +58,17 @@ export class CreatorDbModel {
 
   @Column({
     name: 'image',
-    type: 'jsonb',
+    type: 'uuid',
     nullable: true,
   })
-  image: Record<string, any>[];
+  image: string;
 
   @Column({
     name: 'artwork',
-    type: 'jsonb',
+    type: 'uuid',
     nullable: true,
   })
-  artwork: Record<string, any>[];
+  artwork: string;
 
   @Column({
     name: 'max_level',

@@ -13,8 +13,8 @@ export class migration1704129788000 implements MigrationInterface {
         "is_verified" BOOLEAN NOT NULL DEFAULT false,
         "info_short" TEXT NOT NULL,
         "info_long" TEXT,
-        "image" JSONB,
-        "artwork" JSONB,
+        "image" UUID,
+        "artwork" UUID,
         "max_level" SMALLINT NOT NULL DEFAULT 1,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );

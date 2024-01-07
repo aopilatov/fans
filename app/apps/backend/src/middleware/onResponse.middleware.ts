@@ -9,9 +9,10 @@ export default (fastify: FastifyInstance<any>) => {
         path: res.request.routeOptions.url,
         params: res.request.params,
         headers: res.request.headers,
+        body: res.request?.body,
       },
       statusCode: res.statusCode,
-      time: res.getResponseTime(),
+      ts: res.getResponseTime(),
     });
     next();
   });

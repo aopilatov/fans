@@ -6,11 +6,11 @@ import { length, matches } from 'class-validator';
 @Injectable()
 export class CreatorInputChangeInfoLong extends TelegramInput {
   protected processName = 'profile_edit_info_long';
-  protected backCallback = 'profile_actions_{login}';
+  protected backCallback = { name: 'profile_actions' };
   protected steps = ['infoLong'];
 
   protected async onSuccess(user: UserDbModel, process: Process) {
-    const creator = await this.creatorDbRepository.findByUserAndLogin(user, process.context.login);
+    const creator = await this.creatorDbRepository.findByUserAndUuid(user, process.context.creator);
     await this.creatorDbRepository.update({ ...creator, infoLong: process.inputs.infoLong });
     return `Full description was successfully changed!`;
   }

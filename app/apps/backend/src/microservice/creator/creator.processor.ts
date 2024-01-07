@@ -1,5 +1,4 @@
 import { Process, Processor, InjectQueue } from '@nestjs/bull';
-import { ConfigService } from '@nestjs/config';
 import { Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Job, Queue } from 'bull';
@@ -8,30 +7,37 @@ import { TelegramService } from '@/microservice/telegram';
 import { UserDbModel } from '@/db/model';
 import { CreatorDbRepository } from '@/db/repository';
 import { CreatorService } from './creator.service';
+import { SubscriptionLevelService } from '@/microservice/subscriptionLevel';
+import { Cache } from 'cache-manager';
+import * as _ from 'lodash';
+
 import { CreatorInputCreate } from './creator.input.create';
 import { CreatorInputChangeName } from './creator.input.changeName';
 import { CreatorInputChangeLogin } from './creator.input.changeLogin';
 import { CreatorInputChangeInfoShort } from './creator.input.changeInfoShort';
 import { CreatorInputChangeInfoLong } from './creator.input.changeInfoLong';
 import { CreatorInputChangeImage } from './creator.input.changeImage';
-import { Cache } from 'cache-manager';
-import * as _ from 'lodash';
+import { CreatorInputChangeArtwork } from './creator.input.changeArtwork';
+import { SubscriptionLevelInputAdd } from '@/microservice/subscriptionLevel/subscriptionLevel.input.add';
 
 @Processor('creator')
 export class CreatorProcessor {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheService: Cache,
     @InjectQueue('user') private readonly userQueue: Queue,
-    private readonly creatorService: CreatorService,
-    private readonly configService: ConfigService,
-    private readonly telegramService: TelegramService,
     private readonly creatorDbRepository: CreatorDbRepository,
+    private readonly creatorService: CreatorService,
+    private readonly telegramService: TelegramService,
+    private readonly subscriptionLevelService: SubscriptionLevelService,
+
     private readonly creatorInputCreate: CreatorInputCreate,
     private readonly creatorInputChangeName: CreatorInputChangeName,
     private readonly creatorInputChangeLogin: CreatorInputChangeLogin,
     private readonly creatorInputChangeInfoShort: CreatorInputChangeInfoShort,
     private readonly creatorInputChangeInfoLong: CreatorInputChangeInfoLong,
     private readonly creatorInputChangeImage: CreatorInputChangeImage,
+    private readonly creatorInputChangeArtwork: CreatorInputChangeArtwork,
+    private readonly subscriptionLevelInputAdd: SubscriptionLevelInputAdd,
   ) {}
 
   private async cleanAllProcesses(user: UserDbModel): Promise<void> {
@@ -66,6 +72,12 @@ export class CreatorProcessor {
         case 'profile_edit_image':
           await this.creatorInputChangeImage.proceed(user, job.data, process);
           break;
+        case 'profile_edit_artwork':
+          await this.creatorInputChangeArtwork.proceed(user, job.data, process);
+          break;
+        case 'profile_add_subscription_level':
+          await this.subscriptionLevelInputAdd.proceed(user, job.data, process);
+          break;
       }
 
       return;
@@ -83,8 +95,8 @@ export class CreatorProcessor {
       await this.cleanAllProcesses(user);
 
       const keyboard = [[
-        { text: 'My profiles', callback_data: 'profile_all' },
-        { text: 'Create profile', callback_data: 'profile_create' },
+        { text: 'My profiles', callback_data: await this.telegramService.registerCallback(user, 'profile_all') },
+        { text: 'Create profile', callback_data: await this.telegramService.registerCallback(user, 'profile_create') },
       ]];
 
       const messageId = _.get(job.data, 'message.message_id');
@@ -118,9 +130,17 @@ export class CreatorProcessor {
       await this.cleanAllProcesses(user);
 
       const creators = await this.creatorDbRepository.findByUser(user);
+      const data = [];
+      for (const item of creators) {
+        data.push([{
+          text: item.login,
+          callback_data: await this.telegramService.registerCallback(user, `profile_actions`, { creator: item.uuid }),
+        }]);
+      }
+
       const keyboard: InlineKeyboardButton[][] = [
-        [{ text: '⬅️ Back', callback_data: 'start_back' }],
-        ...creators.map(item => ([{ text: item.login, callback_data: `profile_actions_${item.login}` }])),
+        [{ text: '⬅️ Back', callback_data: await this.telegramService.registerCallback(user, 'start_back') }],
+        ...data,
       ];
 
       await this.telegramService.botCreator.editMessageText(creators.length > 0 ? 'Your profiles' : 'You do not have profiles yet', {
@@ -155,26 +175,30 @@ export class CreatorProcessor {
 
       await this.cleanAllProcesses(user);
 
-      const contextProfile = _.get(job, 'data.data').replace('profile_actions_', '').toLowerCase();
+      const contextProfile = _.get(job, 'data.system.cmd.context.creator');
       const keyboard = [
-        [{ text: '⬅️ Back', callback_data: 'profile_all' }],
+        [{ text: '⬅️ Back', callback_data: await this.telegramService.registerCallback(user, 'profile_all') }],
+        [{ text: '💰 Subscription prices', callback_data: await this.telegramService.registerCallback(user, 'profile_levels', { creator: contextProfile }) }],
         [
-          { text: 'Change name', callback_data: `profile_edit_name_${contextProfile}` },
-          { text: 'Change login', callback_data: `profile_edit_login_${contextProfile}` }
+          { text: 'Change name', callback_data: await this.telegramService.registerCallback(user, 'profile_edit_name', { creator: contextProfile }) },
+          { text: 'Change login', callback_data: await this.telegramService.registerCallback(user, 'profile_edit_login', { creator: contextProfile }) }
         ],
-        [{ text: 'Edit short info', callback_data: `profile_edit_info_short_${contextProfile}` }],
-        [{ text: 'Edit full description', callback_data: `profile_edit_info_long_${contextProfile}` }],
-        [{ text: 'Edit image', callback_data: `profile_edit_image_${contextProfile}` }],
+        [{ text: 'Edit short info', callback_data: await this.telegramService.registerCallback(user, 'profile_edit_info_short', { creator: contextProfile }) }],
+        [{ text: 'Edit full description', callback_data: await this.telegramService.registerCallback(user, 'profile_edit_info_long', { creator: contextProfile }) }],
+        [
+          { text: 'Edit image', callback_data: await this.telegramService.registerCallback(user, 'profile_edit_image', { creator: contextProfile }) },
+          { text: 'Edit banner', callback_data: await this.telegramService.registerCallback(user, 'profile_edit_artwork', { creator: contextProfile }) },
+        ],
       ];
 
-      const creator = await this.creatorDbRepository.findByUserAndLogin(user, contextProfile);
+      const creator = await this.creatorDbRepository.findByUserAndUuid(user, contextProfile);
       const message = [
-        `Nickname: ${contextProfile}`,
+        `Nickname: ${creator.login}`,
         `Name: ${creator.name}`,
+        `Image: ${creator?.image ? '<Uploaded>' : '<Not uploaded>'}`,
+        `Banner: ${creator?.artwork ? '<Uploaded>' : '<Not uploaded>'}`,
         `Short info: ${creator?.infoShort || '<Not filled>'}`,
         `Full description: ${creator?.infoLong || '<Not filled>'}`,
-        `Image: ${creator?.image || '<Not uploaded>'}`,
-        `Banner: ${creator?.artwork || '<Not uploaded>'}`,
       ];
 
       await this.telegramService.botCreator.editMessageText(message.join('\n'), {
@@ -184,6 +208,56 @@ export class CreatorProcessor {
           inline_keyboard: keyboard,
         },
       });
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }
+
+  @Process('get_profile_subscription_levels')
+  public async getProfileSubscriptionLevels(job: Job): Promise<void> {
+    try {
+      const user = await this.creatorService.getUser(job.data);
+      if (!user) return;
+
+      const creator = await this.creatorDbRepository.findByUserAndUuid(user, _.get(job.data, 'system.cmd.context.creator'));
+      const levels = await this.subscriptionLevelService.getForCreator(creator);
+      levels.sort((a,b) => a.price - b.price);
+
+      const data = [];
+      for (const item of levels) {
+        data.push([{
+          text: item.price ? `${item.level}) ${item.price} USDT` : `${item.level}) Free`,
+          callback_data: await this.telegramService.registerCallback(user, 'profile_level',  { level: item.uuid }),
+        }]);
+      }
+
+      const keyboard = [
+        [
+          { text: '⬅️ Back', callback_data: await this.telegramService.registerCallback(user, 'profile_actions', { creator: creator.uuid }) },
+          { text: '❇️ Add price', callback_data: await this.telegramService.registerCallback(user, 'profile_level_new', { creator: creator.uuid }) },
+        ],
+        ...data,
+      ];
+
+      await this.telegramService.botCreator.editMessageText('Subscription prices', {
+        chat_id: user.userTgId,
+        message_id: _.get(job.data, 'message.message_id'),
+        reply_markup: {
+          inline_keyboard: keyboard,
+        },
+      });
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }
+
+  @Process('add_profile_subscription_level')
+  private async addProfileSubscriptionLevel(job: Job): Promise<void> {
+    try {
+      const user = await this.creatorService.getUser(job.data);
+      if (!user) return;
+
+      await this.subscriptionLevelInputAdd.proceed(user, job.data);
     } catch (e: unknown) {
       console.log(e);
     }
@@ -244,6 +318,18 @@ export class CreatorProcessor {
       if (!user) return;
 
       await this.creatorInputChangeImage.proceed(user, job.data);
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }
+
+  @Process('edit_profile_artwork')
+  public async editProfileArtwork(job: Job): Promise<void> {
+    try {
+      const user = await this.creatorService.getUser(job.data);
+      if (!user) return;
+
+      await this.creatorInputChangeArtwork.proceed(user, job.data);
     } catch (e: unknown) {
       console.log(e);
     }

@@ -6,11 +6,12 @@ import { length, matches } from 'class-validator';
 @Injectable()
 export class CreatorInputCreate extends TelegramInput {
   protected processName = 'create';
-  protected backCallback = 'start_back';
+  protected backCallback = { name: 'start_back' };
   protected steps = ['name', 'login'];
 
   protected async onSuccess(user: UserDbModel, process: Process) {
-    await this.creatorDbRepository.create(user, process.inputs.login.toLowerCase(), process.inputs.name, 'My short introduction');
+    const creator = await this.creatorDbRepository.create(user, process.inputs.login.toLowerCase(), process.inputs.name, 'My short introduction');
+    await this.subscriptionLevelService.create(creator, 0);
     return `Name: ${process.inputs.name}\nNickname: ${process.inputs.login}\n\nNice! We are done! Profile successfully created!`;
   }
 
