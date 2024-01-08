@@ -1,11 +1,6 @@
-import { Inject } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { UserDbModel } from '@/db/model';
-import { CreatorDbRepository } from '@/db/repository';
 import { TelegramService } from '@/microservice/telegram';
-import { MediaService } from '@/microservice/media';
-import { SubscriptionLevelService } from '@/microservice/subscriptionLevel';
 import * as _ from 'lodash';
 
 interface Context {
@@ -31,17 +26,13 @@ export interface Step {
 }
 
 export abstract class TelegramInput {
+  protected cacheService!: Cache;
+  protected telegramService: TelegramService
+
   protected processName!: string;
+  protected cacheName!: string;
   protected backCallback!: Record<string, any>;
   protected steps: string[] = [];
-
-  constructor(
-    @Inject(CACHE_MANAGER) private readonly cacheService: Cache,
-    protected readonly creatorDbRepository: CreatorDbRepository,
-    protected readonly telegramService: TelegramService,
-    protected readonly mediaService: MediaService,
-    protected readonly subscriptionLevelService: SubscriptionLevelService,
-  ) {}
 
   protected abstract onSuccess(user: UserDbModel, process: Process): Promise<string>;
 
@@ -63,12 +54,12 @@ export abstract class TelegramInput {
       inputs: {},
     };
 
-    await this.cacheService.set(`creator.process.${user.uuid}`, process, 3600000);
+    await this.cacheService.set(`input:${this.cacheName}:${user.uuid}`, process);
     return process;
   }
 
   private async destroyProcess(user: UserDbModel): Promise<void> {
-    await this.cacheService.del(`creator.process.${user.uuid}`);
+    await this.cacheService.del(`input:${this.cacheName}:${user.uuid}`);
   }
 
   public async proceed(user: UserDbModel, data: Record<string, any>, process?: Process): Promise<void> {
@@ -145,7 +136,7 @@ export abstract class TelegramInput {
         const nextStep: Step = _.invoke(this, nextStepName);
 
         _.set(process, 'step', process.step + 1);
-        await this.cacheService.set(`creator.process.${user.uuid}`, process, 3600000);
+        await this.cacheService.set(`input:${this.cacheName}:${user.uuid}`, process);
 
         const message = `${nextStep.onStart}\n${nextStep.rule}`;
 

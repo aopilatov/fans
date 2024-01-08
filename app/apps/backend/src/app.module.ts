@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CacheModule } from '@nestjs/cache-manager';
-import * as redisStore from 'cache-manager-redis-store';
 
 import config from '@/config';
 
@@ -19,6 +17,7 @@ import {
 import { TelegramModule } from '@/microservice/telegram';
 import { UserModule } from '@/microservice/user';
 import { CreatorModule } from '@/microservice/creator';
+import { SubscriptionLevelModule } from '@/microservice/subscriptionLevel';
 
 @Module({
   imports: [
@@ -67,20 +66,10 @@ import { CreatorModule } from '@/microservice/creator';
       }),
     }),
 
-    CacheModule.registerAsync<any>({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        store: redisStore,
-        isGlobal: true,
-        host: configService.get<string>('redis.host'),
-        port: configService.get<number>('redis.port'),
-      }),
-    }),
-
     TelegramModule,
     UserModule,
     CreatorModule,
+    SubscriptionLevelModule,
   ],
 })
 export class AppModule {}

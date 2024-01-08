@@ -1,12 +1,13 @@
-import { TelegramInput, Process, Step } from '@/common/telegram';
+import { Process, Step } from '@/common/telegram';
 import { Injectable } from '@nestjs/common';
+import { CreatorInput } from './creator.input';
 import { UserDbModel } from '@/db/model';
-import { length, matches } from 'class-validator';
+import { length } from 'class-validator';
 
 @Injectable()
-export class CreatorInputChangeName extends TelegramInput {
+export class CreatorInputChangeName extends CreatorInput {
   protected processName = 'profile_edit_name';
-  protected backCallback = { name: 'profile_actions' };
+  protected backCallback = { name: 'creator_profile_menu' };
   protected steps = ['name'];
 
   protected async onSuccess(user: UserDbModel, process: Process) {

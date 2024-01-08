@@ -8,6 +8,7 @@ import { Queue } from 'bull';
 export class TelegramHandlerCreator {
   constructor(
     @InjectQueue('creator') private readonly creatorQueue: Queue,
+    @InjectQueue('subscriptionLevel') private readonly subscriptionLevelQueue: Queue,
   ) {}
 
   @TelegramCommand('/start')
@@ -16,64 +17,69 @@ export class TelegramHandlerCreator {
     await this.creatorQueue.add('get_menu', data);
   }
 
-  @TelegramProcess()
-  public async processHandler(data: Record<string, any>): Promise<void> {
+  @TelegramProcess('creator')
+  public async processHandlerCreator(data: Record<string, any>): Promise<void> {
     await this.creatorQueue.add('process', data);
   }
 
-  @TelegramCallbackQuery('profile_all')
+  @TelegramProcess('subscription_level')
+  public async processHandlerSubscriptionLevel(data: Record<string, any>): Promise<void> {
+    await this.subscriptionLevelQueue.add('process', data);
+  }
+
+  @TelegramCallbackQuery('creator_profile_fetch_all')
   public async list(data: Record<string, any>): Promise<void> {
-    await this.creatorQueue.add('get_profiles', data);
+    await this.creatorQueue.add('profile_fetch_all', data);
   }
 
-  @TelegramCallbackQuery('profile_create')
+  @TelegramCallbackQuery('creator_profile_create')
   public async create(data: Record<string, any>): Promise<void> {
-    await this.creatorQueue.add('create_profile', data);
+    await this.creatorQueue.add('profile_create', data);
   }
 
-  @TelegramCallbackQuery('profile_actions')
+  @TelegramCallbackQuery('creator_profile_menu')
   public async profileMenu(data: Record<string, any>): Promise<void> {
-    await this.creatorQueue.add('menu_profile', data);
+    await this.creatorQueue.add('profile_menu', data);
   }
 
-  @TelegramCallbackQuery('profile_levels')
-  public async profileSubscriptionLevels(data: Record<string, any>): Promise<void> {
-    await this.creatorQueue.add('get_profile_subscription_levels', data);
-  }
-
-  @TelegramCallbackQuery('profile_level_new')
-  public async profileSubscriptionLevelNew(data: Record<string, any>): Promise<void> {
-    await this.creatorQueue.add('add_profile_subscription_level', data);
-  }
-
-  @TelegramCallbackQuery('profile_edit_name')
+  @TelegramCallbackQuery('creator_profile_edit_name')
   public async profileEditName(data: Record<string, any>): Promise<void> {
-    await this.creatorQueue.add('edit_profile_name', data);
+    await this.creatorQueue.add('profile_edit_name', data);
   }
 
-  @TelegramCallbackQuery('profile_edit_login')
+  @TelegramCallbackQuery('creator_profile_edit_login')
   public async profileEditLogin(data: Record<string, any>): Promise<void> {
-    await this.creatorQueue.add('edit_profile_login', data);
+    await this.creatorQueue.add('profile_edit_login', data);
   }
 
-  @TelegramCallbackQuery('profile_edit_info_short')
+  @TelegramCallbackQuery('creator_profile_edit_info_short')
   public async profileEditInfoShort(data: Record<string, any>): Promise<void> {
-    await this.creatorQueue.add('edit_profile_info_short', data);
+    await this.creatorQueue.add('profile_edit_info_short', data);
   }
 
-  @TelegramCallbackQuery('profile_edit_info_long')
+  @TelegramCallbackQuery('creator_profile_edit_info_long')
   public async profileEditInfoLong(data: Record<string, any>): Promise<void> {
-    await this.creatorQueue.add('edit_profile_info_long', data);
+    await this.creatorQueue.add('profile_edit_info_long', data);
   }
 
-  @TelegramCallbackQuery('profile_edit_image')
+  @TelegramCallbackQuery('creator_profile_edit_image')
   public async profileEditImage(data: Record<string, any>): Promise<void> {
-    await this.creatorQueue.add('edit_profile_image', data);
+    await this.creatorQueue.add('profile_edit_image', data);
   }
 
-  @TelegramCallbackQuery('profile_edit_artwork')
+  @TelegramCallbackQuery('creator_profile_edit_artwork')
   public async profileEditArtwork(data: Record<string, any>): Promise<void> {
-    await this.creatorQueue.add('edit_profile_artwork', data);
+    await this.creatorQueue.add('profile_edit_artwork', data);
+  }
+
+  @TelegramCallbackQuery('subscription_level_fetch_all')
+  public async profileSubscriptionLevels(data: Record<string, any>): Promise<void> {
+    await this.subscriptionLevelQueue.add('level_fetch_all', data);
+  }
+
+  @TelegramCallbackQuery('subscription_level_create')
+  public async profileSubscriptionLevelNew(data: Record<string, any>): Promise<void> {
+    await this.subscriptionLevelQueue.add('level_create', data);
   }
 
 }

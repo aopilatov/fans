@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CreatorProcessor } from './creator.processor';
 import { CreatorService } from './creator.service';
 import { TelegramModule } from '@/microservice/telegram';
 import { MediaModule } from '@/microservice/media';
+import { UserModule } from '@/microservice/user';
 import { SubscriptionLevelModule } from '@/microservice/subscriptionLevel';
 import { CreatorDbRepository } from '@/db/repository';
 import { CreatorDbModel } from '@/db/model';
@@ -17,16 +18,28 @@ import { CreatorInputChangeInfoShort } from './creator.input.changeInfoShort';
 import { CreatorInputChangeInfoLong } from './creator.input.changeInfoLong';
 import { CreatorInputChangeImage } from './creator.input.changeImage';
 import { CreatorInputChangeArtwork } from './creator.input.changeArtwork';
-import { SubscriptionLevelInputAdd } from '@/microservice/subscriptionLevel/subscriptionLevel.input.add';
+import { RedisClientOptions } from 'redis';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { redisStore } from 'cache-manager-redis-yet';
 
 @Module({
   imports: [
-    BullModule.registerQueue({ name: 'user' }, { name: 'creator' }),
+    CacheModule.registerAsync<RedisClientOptions>({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        isGlobal: true,
+        ttl: 3600 * 1000,
+        store: redisStore,
+        url: `redis://${configService.get<string>('redis.host')}:${configService.get<number>('redis.port')}`,
+      }),
+    }),
+    BullModule.registerQueue({ name: 'creator' }),
     TypeOrmModule.forFeature([CreatorDbModel]),
-    CacheModule.register(),
     TelegramModule,
     MediaModule,
-    SubscriptionLevelModule,
+    UserModule,
+    forwardRef(() => SubscriptionLevelModule),
   ],
 
   providers: [
@@ -40,7 +53,8 @@ import { SubscriptionLevelInputAdd } from '@/microservice/subscriptionLevel/subs
     CreatorInputChangeInfoLong,
     CreatorInputChangeImage,
     CreatorInputChangeArtwork,
-    SubscriptionLevelInputAdd,
   ],
+
+  exports: [CreatorService],
 })
 export class CreatorModule {}

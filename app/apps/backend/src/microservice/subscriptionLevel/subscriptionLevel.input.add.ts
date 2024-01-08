@@ -1,16 +1,17 @@
-import { TelegramInput, Process, Step } from '@/common/telegram';
+import { Process, Step } from '@/common/telegram';
 import { Injectable } from '@nestjs/common';
+import { SubscriptionLevelInput } from './subscriptionLevel.input';
 import { UserDbModel } from '@/db/model';
 import { isNumber } from 'class-validator';
 
 @Injectable()
-export class SubscriptionLevelInputAdd extends TelegramInput {
-  protected processName = 'profile_add_subscription_level';
-  protected backCallback = { name: 'profile_levels' };
+export class SubscriptionLevelInputAdd extends SubscriptionLevelInput {
+  protected processName = 'subscription_level_create';
+  protected backCallback = { name: 'subscription_level_fetch_all' };
   protected steps = ['price'];
 
   protected async onSuccess(user: UserDbModel, process: Process) {
-    const creator = await this.creatorDbRepository.findByUserAndUuid(user, process.context.creator);
+    const creator = await this.creatorService.getCreator(user, process.context.creator);
     await this.subscriptionLevelService.create(creator, Number(process.inputs.price));
     return `Subscription level was successfully added!`;
   }

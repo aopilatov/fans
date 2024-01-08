@@ -1,31 +1,43 @@
 import { FastifyRequest } from 'fastify';
 import { Cache } from 'cache-manager';
 import { TelegramService } from '@/microservice/telegram';
+import { UserService } from '@/microservice/user';
 import * as _ from 'lodash';
 
 export class TelegramHandlerManager {
   private static instances: Record<string, TelegramHandlerManager> = {};
   private static cacheService: Cache;
+  private static userService: UserService;
   private static telegramService: TelegramService;
 
   private readonly commands: Record<string, string> = {};
   private readonly callbackQueries: Record<string, string> = {};
-  private process: string = null;
+  private readonly processes: Record<string, string> = {};
 
-  public static getInstance(name: string, cacheService?: Cache, telegramService?: TelegramService): TelegramHandlerManager {
+  public static getInstance(name: string): TelegramHandlerManager {
     if (!_.has(TelegramHandlerManager.instances, name)) {
       _.set(TelegramHandlerManager.instances, name, new TelegramHandlerManager());
     }
 
-    if (cacheService && !TelegramHandlerManager.cacheService) {
+    return _.get(TelegramHandlerManager.instances, name);
+  }
+
+  public static setCacheService(cacheService: Cache) {
+    if (!TelegramHandlerManager.cacheService) {
       TelegramHandlerManager.cacheService = cacheService;
     }
+  }
 
-    if (telegramService && !TelegramHandlerManager.telegramService) {
+  public static setTelegramService(telegramService: TelegramService) {
+    if (!TelegramHandlerManager.telegramService) {
       TelegramHandlerManager.telegramService = telegramService;
     }
+  }
 
-    return _.get(TelegramHandlerManager.instances, name);
+  public static setUserService(userService: UserService) {
+    if (!TelegramHandlerManager.userService) {
+      TelegramHandlerManager.userService = userService;
+    }
   }
 
   public async handle(req: FastifyRequest): Promise<[string, Record<string, any>] | undefined> {
@@ -69,7 +81,6 @@ export class TelegramHandlerManager {
     if (!userTgId) return;
 
     const callbackQuery = await TelegramHandlerManager.telegramService.getCallback(userTgId, callbackQueryMessage);
-    await TelegramHandlerManager.telegramService.flushCallbacks(userTgId);
     if (!callbackQuery) return;
 
     const callbackQueryKeys =  Object.keys(this.callbackQueries);
@@ -87,7 +98,7 @@ export class TelegramHandlerManager {
   }
 
   private async handleInput(req: FastifyRequest): Promise<[string, Record<string, any>]> {
-    if (!this.process) return;
+    if (!Object.keys(this.processes)?.length) return;
 
     const response: Record<string, any> = { ..._.get(req, 'body.message', {}) };
     if (_.has(req, 'body.message.text')) {
@@ -115,7 +126,19 @@ export class TelegramHandlerManager {
       return;
     }
 
-    return [this.process, response];
+    const user = await TelegramHandlerManager.userService.getOrCreate(response);
+    response['user'] = user;
+    if (!user) return;
+
+    let keys = await TelegramHandlerManager.cacheService.store.keys(`input:*:${user.uuid}`);
+    if (!keys?.length) return;
+
+    const key = keys[0]
+      .replace('input:', '')
+      .replace(`:${user.uuid}`, '');
+
+    const process = _.get(this.processes, key);
+    return [process, response];
   }
 
   public addCommand(value: string, method: string): void {
@@ -138,11 +161,13 @@ export class TelegramHandlerManager {
     _.set(this.callbackQueries, value, method);
   }
 
-  public addProcess(method: string) {
-    if (this.process) {
-      throw new Error(`Process '${method}' is already existing`);
+  public addProcess(value: string, method: string) {
+    value = value.toLowerCase();
+
+    if (_.has(this.processes, value)) {
+      throw new Error(`Process '${value}' is already existing`);
     }
 
-    this.process = method;
+    _.set(this.processes, value, method);
   }
 }

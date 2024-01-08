@@ -22,8 +22,11 @@ export function TelegramHandler(name: string) {
       });
     }
 
-    if (Reflect.hasMetadata('process', target)) {
-      manager.addProcess(Reflect.getMetadata('process', target));
+    if (Reflect.hasMetadata('processes', target)) {
+      const processes: Map<string, string> = Reflect.getMetadata('processes', target);
+      Array.from(processes.keys()).forEach(value => {
+        manager.addProcess(value, processes.get(value));
+      });
     }
 
     return target;
@@ -58,10 +61,13 @@ export function TelegramCallbackQuery(value: string) {
   };
 }
 
-export function TelegramProcess() {
+export function TelegramProcess(value: string) {
   return (target: any, prop: any, descriptor: TypedPropertyDescriptor<any>) => {
     if (prop && descriptor) {
-      Reflect.defineMetadata('process', prop, target.constructor);
+      const map = Reflect.hasMetadata('processes', target.constructor) ? Reflect.getMetadata('processes', target.constructor) : new Map();
+      map.set(value, prop);
+
+      Reflect.defineMetadata('processes', map, target.constructor);
       return target;
     }
 

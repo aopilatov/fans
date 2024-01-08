@@ -1,10 +1,11 @@
-import { TelegramInput, Process, Step } from '@/common/telegram';
+import { Process, Step } from '@/common/telegram';
 import { Injectable } from '@nestjs/common';
+import { CreatorInput } from './creator.input';
 import { UserDbModel } from '@/db/model';
 import { length, matches } from 'class-validator';
 
 @Injectable()
-export class CreatorInputCreate extends TelegramInput {
+export class CreatorInputCreate extends CreatorInput {
   protected processName = 'create';
   protected backCallback = { name: 'start_back' };
   protected steps = ['name', 'login'];

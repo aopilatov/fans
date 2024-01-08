@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { SubscriptionLevelDbRepository } from '@/db/repository';
-import { CreatorDbModel, SubscriptionLevelDbModel } from '@/db/model';
+import { CreatorDbModel, SubscriptionLevelDbModel, UserDbModel } from '@/db/model';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class SubscriptionLevelService {

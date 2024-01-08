@@ -1,18 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { TelegramHandler, TelegramCommand } from '@/common/telegram';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
+import { UserService } from '@/microservice/user';
 
 @Injectable()
 @TelegramHandler('main')
 export class TelegramHandlerMain {
   constructor(
-    @InjectQueue('user') private readonly userQueue: Queue,
+    @Inject(forwardRef(() => UserService)) private readonly userService: UserService,
   ) {}
 
   @TelegramCommand('/start')
   public async start(data: Record<string, any>): Promise<void> {
-    await this.userQueue.add('get_link', data);
+    await this.userService.getLink(data);
   }
 
 }
