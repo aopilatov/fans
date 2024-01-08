@@ -8,6 +8,8 @@ import { SubscriptionLevelService } from './subscriptionLevel.service';
 import { UserDbModel } from '@/db/model';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { SubscriptionLevelDbRepository } from '@/db/repository';
+import { DateTime } from 'luxon';
 import * as _ from 'lodash';
 
 import { SubscriptionLevelInputAdd } from './subscriptionLevel.input.add';
@@ -17,6 +19,7 @@ export class SubscriptionLevelProcessor {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheService: Cache,
     @Inject(forwardRef(() => CreatorService)) private readonly creatorService: CreatorService,
+    private readonly subscriptionLevelDbRepository: SubscriptionLevelDbRepository,
     private readonly telegramService: TelegramService,
     private readonly subscriptionLevelService: SubscriptionLevelService,
     private readonly userService: UserService,
@@ -62,7 +65,7 @@ export class SubscriptionLevelProcessor {
   }
 
   @Process('level_fetch_all')
-  public async getProfileSubscriptionLevels(job: Job): Promise<void> {
+  public async getSubscriptionLevels(job: Job): Promise<void> {
     try {
       const user = await this.userService.getOrCreate(job.data);
       if (!user) return;
@@ -73,9 +76,10 @@ export class SubscriptionLevelProcessor {
 
       const data = [];
       for (const item of levels) {
+        const isDeleted = !item?.deletedAt ? '' : ' (Archive)';
         data.push([{
-          text: item.price ? `${item.level}) ${item.price} USDT` : `${item.level}) Free`,
-          callback_data: await this.telegramService.registerCallback(user, 'subscription_level_fetch_all',  { level: item.uuid }),
+          text: item.price ? `${item.level})${isDeleted} ${item.price} USDT` : `${item.level}) Free`,
+          callback_data: await this.telegramService.registerCallback(user, 'subscription_level_retrieve',  { creator: creator.uuid, level: item.uuid }),
         }]);
       }
 
@@ -99,8 +103,39 @@ export class SubscriptionLevelProcessor {
     }
   }
 
+  @Process('level_retrieve')
+  public async getSubscriptionLevel(job: Job): Promise<void> {
+    const user = await this.userService.getOrCreate(job.data);
+    if (!user) return;
+
+    const creator = await this.creatorService.getCreator(user, _.get(job.data, 'system.cmd.context.creator'));
+    const level = await this.subscriptionLevelDbRepository.findByUuid(_.get(job.data, 'system.cmd.context.level'));
+
+    const keyboard = [
+      [{ text: '⬅️ Back', callback_data: await this.telegramService.registerCallback(user, 'subscription_level_fetch_all', { creator: creator.uuid }) }],
+    ];
+
+    if (level.price > 0) {
+      keyboard[0].push({
+        text: !level?.deletedAt ? '🗑️ Archive it' : '📇 Restore it',
+        callback_data: await this.telegramService.registerCallback(user, !level?.deletedAt ? 'subscription_level_archive' : 'subscription_level_unarchive', { creator: creator.uuid, level: level.uuid }),
+      });
+    }
+
+    let message = `Manage subscription price (${level.price} USDT)`;
+    if (level.price === 0) message = 'Can not edit free plan';
+
+    await this.telegramService.botCreator.editMessageText(message, {
+      chat_id: user.userTgId,
+      message_id: _.get(job.data, 'message.message_id'),
+      reply_markup: {
+        inline_keyboard: keyboard,
+      },
+    });
+  }
+
   @Process('level_create')
-  private async addProfileSubscriptionLevel(job: Job): Promise<void> {
+  public async addSubscriptionLevel(job: Job): Promise<void> {
     try {
       const user = await this.userService.getOrCreate(job.data);
       if (!user) return;
@@ -109,5 +144,51 @@ export class SubscriptionLevelProcessor {
     } catch (e: unknown) {
       console.log(e);
     }
+  }
+
+  @Process('level_archive')
+  public async archiveSubscriptionLevel(job: Job): Promise<void> {
+    const user = await this.userService.getOrCreate(job.data);
+    if (!user) return;
+
+    const creator = await this.creatorService.getCreator(user, _.get(job.data, 'system.cmd.context.creator'));
+    const level = await this.subscriptionLevelDbRepository.findByUuid(_.get(job.data, 'system.cmd.context.level'));
+    await this.subscriptionLevelDbRepository.update({ ...level, deletedAt: DateTime.now() });
+    await this.subscriptionLevelService.updateCreatorMaxLevel(creator);
+
+    const keyboard = [
+      [{ text: '⬅️ Back', callback_data: await this.telegramService.registerCallback(user, 'subscription_level_fetch_all', { creator: creator.uuid }) }],
+    ];
+
+    await this.telegramService.botCreator.editMessageText('Subscription plan was successfully archived', {
+      chat_id: user.userTgId,
+      message_id: _.get(job.data, 'message.message_id'),
+      reply_markup: {
+        inline_keyboard: keyboard,
+      },
+    });
+  }
+
+  @Process('level_unarchive')
+  public async unarchiveSubscriptionLevel(job: Job): Promise<void> {
+    const user = await this.userService.getOrCreate(job.data);
+    if (!user) return;
+
+    const creator = await this.creatorService.getCreator(user, _.get(job.data, 'system.cmd.context.creator'));
+    const level = await this.subscriptionLevelDbRepository.findByUuid(_.get(job.data, 'system.cmd.context.level'));
+    await this.subscriptionLevelDbRepository.update({ ...level, deletedAt: null });
+    await this.subscriptionLevelService.updateCreatorMaxLevel(creator);
+
+    const keyboard = [
+      [{ text: '⬅️ Back', callback_data: await this.telegramService.registerCallback(user, 'subscription_level_fetch_all', { creator: creator.uuid }) }],
+    ];
+
+    await this.telegramService.botCreator.editMessageText('Subscription plan was successfully restored', {
+      chat_id: user.userTgId,
+      message_id: _.get(job.data, 'message.message_id'),
+      reply_markup: {
+        inline_keyboard: keyboard,
+      },
+    });
   }
 }

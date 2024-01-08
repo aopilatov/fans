@@ -91,9 +91,6 @@ export class CreatorProcessor {
         case 'profile_edit_artwork':
           await this.creatorInputChangeArtwork.proceed(user, job.data, process);
           break;
-        // case 'profile_add_subscription_level':
-        //   await this.subscriptionLevelInputAdd.proceed(user, job.data, process);
-        //   break;
       }
 
       return;

@@ -28,6 +28,13 @@ export class SubscriptionLevelDbModel {
   price: number;
 
   @Column({
+    name: 'deleted_at',
+    type: 'timestamptz',
+    nullable: true,
+  })
+  deletedAt: DateTime;
+
+  @Column({
     name: 'created_at',
     type: 'timestamptz',
     nullable: false,

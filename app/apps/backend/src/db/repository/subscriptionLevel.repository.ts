@@ -27,6 +27,14 @@ export class SubscriptionLevelDbRepository {
       .getMany();
   }
 
+  public async findMaxByCreator(creator: CreatorDbModel): Promise<SubscriptionLevelDbModel> {
+    return this.getBaseQuery()
+      .andWhere('subscriptionLevel.creatorUuid = :creatorUuid', { creatorUuid: creator.uuid })
+      .orderBy('subscriptionLevel.level', 'DESC')
+      .getOne();
+  }
+
+
   public async create(creator: CreatorDbModel, level: number, price: number ): Promise<SubscriptionLevelDbModel> {
     const subscriptionLevel = this.repository.create({ creatorUuid: creator.uuid, level, price });
     return this.repository.save(subscriptionLevel);

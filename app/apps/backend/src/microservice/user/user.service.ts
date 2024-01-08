@@ -3,7 +3,7 @@ import { UserDbModel } from '@/db/model';
 import { UserDbRepository } from '@/db/repository';
 import { TelegramService } from '@/microservice/telegram';
 import { ConfigService } from '@nestjs/config';
-import crypto from 'node:crypto';
+import * as crypto from 'node:crypto';
 import * as _ from 'lodash';
 
 @Injectable()

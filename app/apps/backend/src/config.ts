@@ -11,8 +11,8 @@ const config = {
   },
 
   url: {
-    frontend: process.env.URL_FRONTEND || 'https://3528-62-65-222-102.ngrok-free.app',
-    backend: process.env.URL_BACKEND || 'https://3528-62-65-222-102.ngrok-free.app/api',
+    frontend: process.env.URL_FRONTEND || '',
+    backend: process.env.URL_BACKEND || '',
   },
 
   db: {
@@ -29,8 +29,8 @@ const config = {
   },
 
   telegram: {
-    botMain: process.env.TELEGRAM_BOT_MAIN_TOKEN || '6899381215:AAEtXqjQKUs4AUKSk2DSl-fJ-IWVdpF0Juo',
-    botCreator: process.env.TELEGRAM_BOT_MAIN_TOKEN || '6642601944:AAGUXQrovRT83caZMY9VjzLaMczZ7kq3NzA',
+    botMain: process.env.TELEGRAM_BOT_MAIN_TOKEN || '',
+    botCreator: process.env.TELEGRAM_BOT_MAIN_TOKEN || '',
   },
 };
 

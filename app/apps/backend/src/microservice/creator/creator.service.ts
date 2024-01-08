@@ -11,4 +11,8 @@ export class CreatorService {
   public async getCreator(user: UserDbModel, uuid: string): Promise<CreatorDbModel> {
     return this.creatorDbRepository.findByUserAndUuid(user, uuid);
   }
+
+  public async updateMaxLevel(creator: CreatorDbModel, level: number): Promise<CreatorDbModel> {
+    return this.creatorDbRepository.update({ ...creator, maxLevel: level });
+  }
 }

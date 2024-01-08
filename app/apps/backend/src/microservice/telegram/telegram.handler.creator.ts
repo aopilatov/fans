@@ -77,9 +77,24 @@ export class TelegramHandlerCreator {
     await this.subscriptionLevelQueue.add('level_fetch_all', data);
   }
 
+  @TelegramCallbackQuery('subscription_level_retrieve')
+  public async profileSubscriptionLevel(data: Record<string, any>): Promise<void> {
+    await this.subscriptionLevelQueue.add('level_retrieve', data);
+  }
+
   @TelegramCallbackQuery('subscription_level_create')
   public async profileSubscriptionLevelNew(data: Record<string, any>): Promise<void> {
     await this.subscriptionLevelQueue.add('level_create', data);
+  }
+
+  @TelegramCallbackQuery('subscription_level_archive')
+  public async profileSubscriptionLevelArchive(data: Record<string, any>): Promise<void> {
+    await this.subscriptionLevelQueue.add('level_archive', data);
+  }
+
+  @TelegramCallbackQuery('subscription_level_unarchive')
+  public async profileSubscriptionLevelUnarchive(data: Record<string, any>): Promise<void> {
+    await this.subscriptionLevelQueue.add('level_unarchive', data);
   }
 
 }

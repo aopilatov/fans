@@ -9,6 +9,7 @@ export class migration1704567570000 implements MigrationInterface {
         "creator_uuid" UUID NOT NULL,
         "level" INT2 NOT NULL,
         "price" FLOAT8 NOT NULL,
+        "deleted_at" TIMESTAMPTZ,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
 
