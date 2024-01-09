@@ -30,7 +30,8 @@ const config = {
 
   telegram: {
     botMain: process.env.TELEGRAM_BOT_MAIN_TOKEN || '',
-    botCreator: process.env.TELEGRAM_BOT_MAIN_TOKEN || '',
+    botCreator: process.env.TELEGRAM_BOT_CREATOR_TOKEN || '',
+    botAgency: process.env.TELEGRAM_BOT_AGENCY_TOKEN || '',
   },
 };
 

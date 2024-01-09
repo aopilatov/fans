@@ -18,6 +18,7 @@ import { TelegramModule } from '@/microservice/telegram';
 import { UserModule } from '@/microservice/user';
 import { CreatorModule } from '@/microservice/creator';
 import { SubscriptionLevelModule } from '@/microservice/subscriptionLevel';
+import { AgencyModule } from '@/microservice/agency';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { SubscriptionLevelModule } from '@/microservice/subscriptionLevel';
     UserModule,
     CreatorModule,
     SubscriptionLevelModule,
+    AgencyModule,
   ],
 })
 export class AppModule {}

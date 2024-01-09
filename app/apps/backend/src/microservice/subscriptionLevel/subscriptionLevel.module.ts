@@ -9,11 +9,11 @@ import { TelegramModule } from '@/microservice/telegram';
 import { CreatorModule } from '@/microservice/creator';
 import { UserModule } from '@/microservice/user';
 import { CacheModule } from '@nestjs/cache-manager';
-
-import { SubscriptionLevelInputAdd } from './subscriptionLevel.input.add';
 import { RedisClientOptions } from 'redis';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { redisStore } from 'cache-manager-redis-yet';
+
+import { SubscriptionLevelInputAdd } from './subscriptionLevel.input.add';
 
 @Module({
   imports: [

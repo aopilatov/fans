@@ -192,6 +192,7 @@ export class CreatorProcessor {
       const keyboard = [
         [{ text: '⬅️ Back', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_fetch_all') }],
         [{ text: '💰 Subscription prices', callback_data: await this.telegramService.registerCallback(user, 'subscription_level_fetch_all', { creator: contextProfile }) }],
+        [{ text: '⚡️ Producer', callback_data: await this.telegramService.registerCallback(user, 'agency_retrieve_creator_agency', { creator: contextProfile }) }],
         [
           { text: 'Change name', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_edit_name', { creator: contextProfile }) },
           { text: 'Change login', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_edit_login', { creator: contextProfile }) }

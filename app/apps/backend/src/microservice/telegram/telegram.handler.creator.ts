@@ -9,6 +9,7 @@ export class TelegramHandlerCreator {
   constructor(
     @InjectQueue('creator') private readonly creatorQueue: Queue,
     @InjectQueue('subscriptionLevel') private readonly subscriptionLevelQueue: Queue,
+    @InjectQueue('agency') private readonly agencyQueue: Queue,
   ) {}
 
   @TelegramCommand('/start')
@@ -25,6 +26,11 @@ export class TelegramHandlerCreator {
   @TelegramProcess('subscription_level')
   public async processHandlerSubscriptionLevel(data: Record<string, any>): Promise<void> {
     await this.subscriptionLevelQueue.add('process', data);
+  }
+
+  @TelegramProcess('agency')
+  public async processHandlerAgency(data: Record<string, any>): Promise<void> {
+    await this.agencyQueue.add('process', data);
   }
 
   @TelegramCallbackQuery('creator_profile_fetch_all')
@@ -95,6 +101,16 @@ export class TelegramHandlerCreator {
   @TelegramCallbackQuery('subscription_level_unarchive')
   public async profileSubscriptionLevelUnarchive(data: Record<string, any>): Promise<void> {
     await this.subscriptionLevelQueue.add('level_unarchive', data);
+  }
+
+  @TelegramCallbackQuery('agency_retrieve_creator_agency')
+  public async profileAgency(data: Record<string, any>): Promise<void> {
+    await this.agencyQueue.add('retrieve_creator_agency', data);
+  }
+
+  @TelegramCallbackQuery('agency_fetch_creator_inqueries')
+  public async profileAgencyInqueries(data: Record<string, any>): Promise<void> {
+    await this.agencyQueue.add('fetch_creator_inqueries', data);
   }
 
 }

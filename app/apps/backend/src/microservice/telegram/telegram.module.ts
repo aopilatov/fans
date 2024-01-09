@@ -27,6 +27,7 @@ import { redisStore } from 'cache-manager-redis-yet';
       { name: 'user' },
       { name: 'creator' },
       { name: 'subscriptionLevel' },
+      { name: 'agency' },
     ),
     forwardRef(() => UserModule),
   ],
