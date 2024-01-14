@@ -4,6 +4,7 @@ import { TelegramInit } from './telegram.init';
 import { TelegramController } from './telegram.controller';
 import { TelegramHandlerMain } from './telegram.handler.main';
 import { TelegramHandlerCreator } from './telegram.handler.creator';
+import { TelegramHandlerAgency } from './telegram.handler.agency';
 import { UserModule } from '@/microservice/user';
 import { BullModule } from '@nestjs/bull';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -28,6 +29,7 @@ import { redisStore } from 'cache-manager-redis-yet';
       { name: 'creator' },
       { name: 'subscriptionLevel' },
       { name: 'agency' },
+      { name: 'post' },
     ),
     forwardRef(() => UserModule),
   ],
@@ -37,6 +39,7 @@ import { redisStore } from 'cache-manager-redis-yet';
     TelegramInit,
     TelegramHandlerMain,
     TelegramHandlerCreator,
+    TelegramHandlerAgency,
   ],
 
   controllers: [TelegramController],

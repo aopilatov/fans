@@ -41,7 +41,7 @@ export class SubscriptionLevelProcessor {
   @OnQueueActive()
   public async onProgress(job: Job): Promise<void> {
     const userTgId = parseInt(_.get(job, 'data.from.id', ''));
-    if (userTgId) await this.telegramService.flushCallbacks(userTgId);
+    // if (userTgId) await this.telegramService.flushCallbacks(userTgId);
   }
 
   @Process('process')

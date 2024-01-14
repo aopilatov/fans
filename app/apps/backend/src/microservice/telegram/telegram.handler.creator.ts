@@ -48,6 +48,11 @@ export class TelegramHandlerCreator {
     await this.creatorQueue.add('profile_menu', data);
   }
 
+  @TelegramCallbackQuery('creator_profile_posts_menu')
+  public async profilePostNew(data: Record<string, any>): Promise<void> {
+    await this.creatorQueue.add('profile_posts_menu', data);
+  }
+
   @TelegramCallbackQuery('creator_profile_edit_name')
   public async profileEditName(data: Record<string, any>): Promise<void> {
     await this.creatorQueue.add('profile_edit_name', data);
@@ -103,14 +108,39 @@ export class TelegramHandlerCreator {
     await this.subscriptionLevelQueue.add('level_unarchive', data);
   }
 
+  @TelegramCallbackQuery('agency_creator_manage')
+  public async profileAgencyRetrieve(data: Record<string, any>): Promise<void> {
+    await this.agencyQueue.add('creator_manage', data);
+  }
+
+  @TelegramCallbackQuery('agency_remove_by_creator')
+  public async profileAgencyRemoveAgency(data: Record<string, any>): Promise<void> {
+    await this.agencyQueue.add('remove_by_creator', data);
+  }
+
   @TelegramCallbackQuery('agency_retrieve_creator_agency')
   public async profileAgency(data: Record<string, any>): Promise<void> {
     await this.agencyQueue.add('retrieve_creator_agency', data);
   }
 
-  @TelegramCallbackQuery('agency_fetch_creator_inqueries')
+  @TelegramCallbackQuery('agency_fetch_creator_invites')
   public async profileAgencyInqueries(data: Record<string, any>): Promise<void> {
-    await this.agencyQueue.add('fetch_creator_inqueries', data);
+    await this.agencyQueue.add('fetch_creator_invites', data);
+  }
+
+  @TelegramCallbackQuery('agency_retrieve_creator_invite')
+  public async profileAgencyRetrieveCreatorInvite(data: Record<string, any>): Promise<void> {
+    await this.agencyQueue.add('retrieve_creator_invite', data);
+  }
+
+  @TelegramCallbackQuery('agency_accept_invite_accept')
+  public async profileAgencyAcceptInviteAccept(data: Record<string, any>): Promise<void> {
+    await this.agencyQueue.add('accept_invite_accept', data);
+  }
+
+  @TelegramCallbackQuery('agency_accept_invite_decline')
+  public async profileAgencyAcceptInviteDecline(data: Record<string, any>): Promise<void> {
+    await this.agencyQueue.add('accept_invite_decline', data);
   }
 
 }

@@ -1,10 +1,12 @@
 import { Cache } from 'cache-manager';
 import { UserDbModel } from '@/db/model';
 import { TelegramService } from '@/microservice/telegram';
+import * as TelegramBot from 'node-telegram-bot-api';
 import * as _ from 'lodash';
 
 interface Context {
   creator?: string;
+  agency?: string;
 }
 
 export interface Process {
@@ -27,12 +29,14 @@ export interface Step {
 
 export abstract class TelegramInput {
   protected cacheService!: Cache;
-  protected telegramService: TelegramService
+  protected telegramService!: TelegramService
 
   protected processName!: string;
   protected cacheName!: string;
   protected backCallback!: Record<string, any>;
   protected steps: string[] = [];
+
+  protected constructor(protected readonly telegramBot: TelegramBot) {}
 
   protected abstract onSuccess(user: UserDbModel, process: Process): Promise<string>;
 
@@ -45,6 +49,7 @@ export abstract class TelegramInput {
 
     const message: string = _.get(data, 'data');
     if (_.has(data, 'system.cmd.context.creator')) _.set(context, 'creator', _.get(data, 'system.cmd.context.creator'));
+    if (_.has(data, 'system.cmd.context.agency')) _.set(context, 'agency', _.get(data, 'system.cmd.context.agency'));
 
     const process: Process = {
       messageId,
@@ -90,9 +95,7 @@ export abstract class TelegramInput {
         return;
       }
 
-      this.backCallback['context'] = {
-        creator: process.context.creator,
-      };
+      this.backCallback['context'] = process.context;
 
       input = _.get(data, 'system');
       if (input) {
@@ -105,7 +108,7 @@ export abstract class TelegramInput {
       if (newProcess) {
         const message = `${step.onStart}\n${step.rule}`;
 
-        await this.telegramService.botCreator.editMessageText(message, {
+        await this.telegramBot.editMessageText(message, {
           chat_id: user.userTgId,
           message_id: process.messageId,
           reply_markup: {
@@ -118,7 +121,7 @@ export abstract class TelegramInput {
         return;
       }
 
-      await this.telegramService.botCreator.deleteMessage(user.userTgId, _.get(data, 'message_id'));
+      await this.telegramBot.deleteMessage(user.userTgId, _.get(data, 'message_id'));
 
       const validation = await step.validate(input);
       if (!validation || typeof validation === 'string') {
@@ -140,7 +143,7 @@ export abstract class TelegramInput {
 
         const message = `${nextStep.onStart}\n${nextStep.rule}`;
 
-        await this.telegramService.botCreator.editMessageText(message, {
+        await this.telegramBot.editMessageText(message, {
           chat_id: user.userTgId,
           message_id: process.messageId,
           reply_markup: {
@@ -156,7 +159,7 @@ export abstract class TelegramInput {
       const result = await this.onSuccess(user, process);
       await this.destroyProcess(user);
 
-      await this.telegramService.botCreator.editMessageText(result, {
+      await this.telegramBot.editMessageText(result, {
         chat_id: user.userTgId,
         message_id: process.messageId,
         reply_markup: {
@@ -178,7 +181,7 @@ export abstract class TelegramInput {
       }
       const message = `Got '${inputText}' from you. ${step.onFail}${errorMessage}${step.rule}`;
 
-      await this.telegramService.botCreator.editMessageText(message, {
+      await this.telegramBot.editMessageText(message, {
         chat_id: user.userTgId,
         message_id: process.messageId,
         reply_markup: {

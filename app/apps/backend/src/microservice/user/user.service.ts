@@ -46,4 +46,8 @@ export class UserService {
 
     return user;
   }
+
+  public async getByUuid(uuid: string): Promise<UserDbModel> {
+    return this.userDbRepository.findByUuid(uuid);
+  }
 }

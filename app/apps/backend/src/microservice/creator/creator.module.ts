@@ -6,10 +6,14 @@ import { CreatorService } from './creator.service';
 import { TelegramModule } from '@/microservice/telegram';
 import { MediaModule } from '@/microservice/media';
 import { UserModule } from '@/microservice/user';
+import { AgencyAdminModule } from '@/microservice/agencyAdmin';
 import { SubscriptionLevelModule } from '@/microservice/subscriptionLevel';
 import { CreatorDbRepository } from '@/db/repository';
 import { CreatorDbModel } from '@/db/model';
 import { CacheModule } from '@nestjs/cache-manager';
+import { RedisClientOptions } from 'redis';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { redisStore } from 'cache-manager-redis-yet';
 
 import { CreatorInputCreate } from './creator.input.create';
 import { CreatorInputChangeName } from './creator.input.changeName';
@@ -18,9 +22,7 @@ import { CreatorInputChangeInfoShort } from './creator.input.changeInfoShort';
 import { CreatorInputChangeInfoLong } from './creator.input.changeInfoLong';
 import { CreatorInputChangeImage } from './creator.input.changeImage';
 import { CreatorInputChangeArtwork } from './creator.input.changeArtwork';
-import { RedisClientOptions } from 'redis';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { redisStore } from 'cache-manager-redis-yet';
+
 
 @Module({
   imports: [
@@ -39,6 +41,7 @@ import { redisStore } from 'cache-manager-redis-yet';
     TelegramModule,
     MediaModule,
     UserModule,
+    AgencyAdminModule,
     forwardRef(() => SubscriptionLevelModule),
   ],
 

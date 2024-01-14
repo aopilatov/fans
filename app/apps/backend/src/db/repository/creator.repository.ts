@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreatorDbModel, UserDbModel } from '../model';
+import { CreatorDbModel, UserDbModel, AgencyDbModel } from '../model';
 
 @Injectable()
 export class CreatorDbRepository {
@@ -45,6 +45,20 @@ export class CreatorDbRepository {
       .andWhere('creator.userUuid = :userUuid', { userUuid: user.uuid })
       .andWhere('creator.login = :login', { login: login.toLowerCase() })
       .getOne();
+  }
+
+  public async findByAgency(agency: AgencyDbModel): Promise<CreatorDbModel[]> {
+    return this.getBaseQuery()
+      .andWhere('creator.agencyUuid = :agencyUuid', { agencyUuid: agency.uuid })
+      .addOrderBy('creator.login', 'ASC')
+      .getMany();
+  }
+
+  public async findByAgencyUuids(uuids: string[]): Promise<CreatorDbModel[]> {
+    return this.getBaseQuery()
+      .andWhere('creator.agencyUuid IN (:...uuids)', { uuids })
+      .addOrderBy('creator.login', 'ASC')
+      .getMany();
   }
 
   public async create(user: UserDbModel, login: string, name: string, infoShort: string, infoLong?: string, image?: string, artwork?: string): Promise<CreatorDbModel> {

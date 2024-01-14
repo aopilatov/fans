@@ -5,9 +5,10 @@ import { Job } from 'bull';
 import { InlineKeyboardButton } from 'node-telegram-bot-api';
 import { TelegramService } from '@/microservice/telegram';
 import { UserService } from '@/microservice/user';
-import { CreatorDbModel, UserDbModel } from '@/db/model';
+import { UserDbModel } from '@/db/model';
 import { CreatorDbRepository } from '@/db/repository';
 import { CreatorService } from './creator.service';
+import { AgencyAdminService } from '@/microservice/agencyAdmin';
 import { Cache } from 'cache-manager';
 import * as _ from 'lodash';
 
@@ -27,6 +28,7 @@ export class CreatorProcessor {
     private readonly creatorService: CreatorService,
     private readonly userService: UserService,
     private readonly telegramService: TelegramService,
+    private readonly agencyAdminService: AgencyAdminService,
 
     private readonly creatorInputCreate: CreatorInputCreate,
     private readonly creatorInputChangeName: CreatorInputChangeName,
@@ -58,7 +60,7 @@ export class CreatorProcessor {
   @OnQueueActive()
   public async onProgress(job: Job): Promise<void> {
     const userTgId = parseInt(_.get(job, 'data.from.id', ''));
-    if (userTgId) await this.telegramService.flushCallbacks(userTgId);
+    // if (userTgId) await this.telegramService.flushCallbacks(userTgId);
   }
 
   @Process('process')
@@ -128,7 +130,6 @@ export class CreatorProcessor {
           },
         })
       }
-
     } catch (e: unknown) {
       console.log(e);
     }
@@ -142,13 +143,25 @@ export class CreatorProcessor {
 
       await this.cleanAllProcesses(user);
 
-      const creators = await this.creatorDbRepository.findByUser(user);
       const data = [];
+
+      const creators = await this.creatorDbRepository.findByUser(user);
       for (const item of creators) {
         data.push([{
           text: item.login,
           callback_data: await this.telegramService.registerCallback(user, 'creator_profile_menu', { creator: item.uuid }),
         }]);
+      }
+
+      const adminAgencies = await this.agencyAdminService.getListByUser(user);
+      if (adminAgencies?.length) {
+        const creatorsForAgencies = await this.creatorDbRepository.findByAgencyUuids(adminAgencies.map(item => item.agencyUuid));
+        for (const item of creatorsForAgencies) {
+          data.push([{
+            text: item.login,
+            callback_data: await this.telegramService.registerCallback(user, 'creator_profile_menu', { creator: item.uuid, agency: item.agencyUuid }),
+          }]);
+        }
       }
 
       const keyboard: InlineKeyboardButton[][] = [
@@ -189,10 +202,21 @@ export class CreatorProcessor {
       await this.cleanAllProcesses(user);
 
       const contextProfile = _.get(job, 'data.system.cmd.context.creator');
-      const keyboard = [
+      const contextAgency = _.get(job, 'data.system.cmd.context.agency');
+
+      let keyboard = [
         [{ text: '⬅️ Back', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_fetch_all') }],
+        [{ text: '📚 Posts', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_posts_menu', { creator: contextProfile }) }],
         [{ text: '💰 Subscription prices', callback_data: await this.telegramService.registerCallback(user, 'subscription_level_fetch_all', { creator: contextProfile }) }],
-        [{ text: '⚡️ Producer', callback_data: await this.telegramService.registerCallback(user, 'agency_retrieve_creator_agency', { creator: contextProfile }) }],
+      ];
+
+      if (!contextAgency) {
+        keyboard[1].push({ text: '💰 Wallet', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_wallet_menu', { creator: contextProfile }) });
+        keyboard.push([{ text: '⚡️ Producer', callback_data: await this.telegramService.registerCallback(user, 'agency_retrieve_creator_agency', { creator: contextProfile }) }]);
+      }
+
+      keyboard = [
+        ...keyboard,
         [
           { text: 'Change name', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_edit_name', { creator: contextProfile }) },
           { text: 'Change login', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_edit_login', { creator: contextProfile }) }
@@ -225,6 +249,29 @@ export class CreatorProcessor {
     } catch (e: unknown) {
       console.log(e);
     }
+  }
+
+  @Process('profile_posts_menu')
+  public async getPostsMenu(job: Job): Promise<void> {
+    const user = await this.userService.getOrCreate(job.data);
+    if (!user) return;
+
+    await this.cleanAllProcesses(user);
+
+    const contextProfile = _.get(job, 'data.system.cmd.context.creator');
+    const keyboard = [
+      [{ text: '⬅️ Back', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_menu', { creator: contextProfile }) }],
+      [{ text: '🌠 New post', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_menu', { creator: contextProfile }) }],
+      [{ text: '📚 Manage posts', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_menu', { creator: contextProfile }) }],
+    ];
+
+    await this.telegramService.botCreator.editMessageText('Manage posts', {
+      chat_id: user.userTgId,
+      message_id: _.get(job.data, 'message.message_id'),
+      reply_markup: {
+        inline_keyboard: keyboard,
+      },
+    });
   }
 
   @Process('profile_edit_name')

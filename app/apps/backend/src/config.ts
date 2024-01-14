@@ -11,8 +11,8 @@ const config = {
   },
 
   url: {
-    frontend: process.env.URL_FRONTEND || '',
-    backend: process.env.URL_BACKEND || '',
+    frontend: process.env.URL_FRONTEND || 'https://49aa-62-65-222-193.ngrok-free.app',
+    backend: process.env.URL_BACKEND || 'https://49aa-62-65-222-193.ngrok-free.app/api',
   },
 
   db: {
@@ -29,9 +29,9 @@ const config = {
   },
 
   telegram: {
-    botMain: process.env.TELEGRAM_BOT_MAIN_TOKEN || '',
-    botCreator: process.env.TELEGRAM_BOT_CREATOR_TOKEN || '',
-    botAgency: process.env.TELEGRAM_BOT_AGENCY_TOKEN || '',
+    botMain: process.env.TELEGRAM_BOT_MAIN_TOKEN || '6899381215:AAEtXqjQKUs4AUKSk2DSl-fJ-IWVdpF0Juo',
+    botCreator: process.env.TELEGRAM_BOT_CREATOR_TOKEN || '6642601944:AAGUXQrovRT83caZMY9VjzLaMczZ7kq3NzA',
+    botAgency: process.env.TELEGRAM_BOT_AGENCY_TOKEN || '6970627762:AAHtTZ7Prr4Cdjfx8ud3NRByDuBlH3bhoCM',
   },
 };
 

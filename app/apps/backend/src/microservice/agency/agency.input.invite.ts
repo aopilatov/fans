@@ -1,27 +1,36 @@
 import { Process, Step } from '@/common/telegram';
 import { Injectable } from '@nestjs/common';
-import { CreatorInput } from './creator.input';
+import { AgencyInput } from './agency.input';
 import { UserDbModel } from '@/db/model';
 import { length, matches } from 'class-validator';
 
 @Injectable()
-export class CreatorInputChangeLogin extends CreatorInput {
-  protected processName = 'profile_edit_login';
-  protected backCallback = { name: 'creator_profile_menu' };
+export class AgencyInputInvite extends AgencyInput {
+  protected processName = 'invite';
+  protected backCallback = { name: 'agency_profile_menu' };
   protected steps = ['login'];
 
   protected async onSuccess(user: UserDbModel, process: Process) {
-    const creator = await this.creatorDbRepository.findByUserAndUuid(user, process.context.creator);
-    await this.creatorDbRepository.update({ ...creator, login: process.inputs.login });
-    return `Nickname was successfully changed!`;
+    const agency = await this.agencyService.find(user, process.context.agency);
+    if (agency) {
+      const creator = await this.creatorService.getByLogin(process.inputs.login);
+      const isExisting = await this.agencyService.checkInvite(agency, creator);
+      if (isExisting) {
+        return 'Invite had been sent before!';
+      }
+
+      await this.agencyService.addInvite(agency, creator);
+    }
+
+    return `Invite was sent!`;
   }
 
   protected login(): Step {
     return {
       prop: 'login',
       rule: 'Nickname could not have less than 2 characters, and more than 20. No special characters and spaces, but \'-\', \'_\', and \'.\'',
-      onStart: 'Now send me the preferred nickname. You could easily edit it after.',
-      onFail: 'Can not use this nickname :( Send me another one, please!',
+      onStart: 'Ok! Send me the nickname of the creator',
+      onFail: 'Can not search by this nickname :( Send me another one please!',
       transform: (input: string) => input.toLowerCase(),
       validate: async (input: string): Promise<boolean | string> => {
         input = input.toLowerCase();
@@ -36,10 +45,8 @@ export class CreatorInputChangeLogin extends CreatorInput {
           return 'Value can not start or finish with \'.\'';
         }
 
-        const userWithLogin = await this.creatorDbRepository.findByLogin(input);
-        if (userWithLogin) {
-          return `Nickname '${input}' is already picked :( Send me another preferred nickname, please!`;
-        }
+        const creator = await this.creatorService.getByLogin(input);
+        if (!creator) return `Creator with nickname '${input}' is not found.`;
 
         return true;
       },

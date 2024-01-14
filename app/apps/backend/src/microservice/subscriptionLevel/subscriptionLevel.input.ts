@@ -15,6 +15,6 @@ export abstract class SubscriptionLevelInput extends TelegramInput {
     protected telegramService: TelegramService,
     protected subscriptionLevelService: SubscriptionLevelService,
   ) {
-    super();
+    super(telegramService.botCreator);
   }
 }

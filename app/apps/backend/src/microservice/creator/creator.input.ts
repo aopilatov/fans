@@ -17,6 +17,6 @@ export abstract class CreatorInput extends TelegramInput {
     protected readonly mediaService: MediaService,
     protected readonly creatorDbRepository: CreatorDbRepository,
   ) {
-    super();
+    super(telegramService.botCreator);
   }
 }

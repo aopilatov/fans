@@ -11,6 +11,7 @@ import * as _ from 'lodash';
 export class TelegramService {
   public readonly botMain!: TelegramBot;
   public readonly botCreator!: TelegramBot;
+  public readonly botAgency!: TelegramBot;
 
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheService: Cache,
@@ -22,6 +23,9 @@ export class TelegramService {
 
       this.botCreator = new TelegramBot(this.configService.get<string>('telegram.botCreator'), { polling: false });
       console.log(`Bot creator successfully initiated: ${this.configService.get<string>('telegram.botCreator')}`);
+
+      this.botAgency = new TelegramBot(this.configService.get<string>('telegram.botAgency'), { polling: false });
+      console.log(`Bot creator successfully initiated: ${this.configService.get<string>('telegram.botAgency')}`);
     } catch (e: any) {
       console.error(e);
     }
@@ -34,7 +38,7 @@ export class TelegramService {
     const uuid = crypto.randomUUID();
     data[uuid] = { name, context };
 
-    await this.cacheService.set(`callbacks.${user.userTgId}`, data, 10 * 24 * 3600000);
+    await this.cacheService.set(`callbacks.${user.userTgId}`, data, 3600000);
     return uuid;
   }
 

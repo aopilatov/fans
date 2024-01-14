@@ -9,9 +9,11 @@ import {
   UserDbModel,
   AgencyDbModel,
   AgencyAdminDbModel,
+  AgencyInviteDbModel,
   CreatorDbModel,
   MediaDbModel,
   SubscriptionLevelDbModel,
+  PostDbModel,
 } from '@/db/model';
 
 import { TelegramModule } from '@/microservice/telegram';
@@ -60,9 +62,11 @@ import { AgencyModule } from '@/microservice/agency';
           UserDbModel,
           AgencyDbModel,
           AgencyAdminDbModel,
+          AgencyInviteDbModel,
           CreatorDbModel,
           MediaDbModel,
           SubscriptionLevelDbModel,
+          PostDbModel
         ],
       }),
     }),

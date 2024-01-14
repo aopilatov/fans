@@ -35,7 +35,7 @@ export class SubscriptionLevelService {
     }
 
     level = levels.filter(item => item.price < price).length + 1;
-    const newLevel = this.subscriptionLevelDbRepository.create(creator, level, price);
+    const newLevel = await this.subscriptionLevelDbRepository.create(creator, level, price);
 
     await this.updateCreatorMaxLevel(creator);
     return newLevel;

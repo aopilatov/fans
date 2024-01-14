@@ -2,6 +2,7 @@ import { Controller, Inject, Post, Req, forwardRef } from '@nestjs/common';
 import { TelegramHandlerManager } from '@/common/telegram';
 import { TelegramHandlerMain } from './telegram.handler.main';
 import { TelegramHandlerCreator } from './telegram.handler.creator';
+import { TelegramHandlerAgency } from './telegram.handler.agency';
 import { TelegramService } from './telegram.service';
 import { FastifyRequest } from 'fastify';
 import { UserService } from '@/microservice/user';
@@ -19,6 +20,7 @@ export class TelegramController {
     private readonly telegramService: TelegramService,
     private readonly telegramMainHandler: TelegramHandlerMain,
     private readonly telegramHandlerCreator: TelegramHandlerCreator,
+    private readonly telegramHandlerAgency: TelegramHandlerAgency,
   ) {
     this.handler = TelegramHandlerManager;
     this.handler.setCacheService(this.cacheService);
@@ -44,6 +46,18 @@ export class TelegramController {
     if (result) {
       const [cb, data] = result;
       await _.invoke(this.telegramHandlerCreator, cb, data);
+    }
+
+    return 'webhook';
+  }
+
+  @Post('/agency')
+  public async agency(@Req() req: FastifyRequest): Promise<string> {
+    this.handler.setUserService(this.userService);
+    const result = await this.handler.getInstance('agency').handle(req);
+    if (result) {
+      const [cb, data] = result;
+      await _.invoke(this.telegramHandlerAgency, cb, data);
     }
 
     return 'webhook';
