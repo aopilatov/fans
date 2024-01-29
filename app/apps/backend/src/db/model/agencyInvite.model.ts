@@ -1,5 +1,4 @@
 import { Column, PrimaryGeneratedColumn, Entity } from 'typeorm';
-import { DateTime } from 'luxon';
 
 @Entity('agency_invite')
 export class AgencyInviteDbModel {
@@ -26,5 +25,5 @@ export class AgencyInviteDbModel {
     nullable: false,
     default: 'NOW()',
   })
-  createdAt: DateTime;
+  createdAt: Date;
 }

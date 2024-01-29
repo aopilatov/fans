@@ -3,9 +3,11 @@ import { BullModule } from '@nestjs/bull';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CreatorProcessor } from './creator.processor';
 import { CreatorService } from './creator.service';
+import { CreatorController } from './creator.controller';
 import { TelegramModule } from '@/microservice/telegram';
 import { MediaModule } from '@/microservice/media';
 import { UserModule } from '@/microservice/user';
+import { AuthModule } from '@/microservice/auth';
 import { AgencyAdminModule } from '@/microservice/agencyAdmin';
 import { SubscriptionLevelModule } from '@/microservice/subscriptionLevel';
 import { CreatorDbRepository } from '@/db/repository';
@@ -23,7 +25,6 @@ import { CreatorInputChangeInfoLong } from './creator.input.changeInfoLong';
 import { CreatorInputChangeImage } from './creator.input.changeImage';
 import { CreatorInputChangeArtwork } from './creator.input.changeArtwork';
 
-
 @Module({
   imports: [
     CacheModule.registerAsync<RedisClientOptions>({
@@ -38,6 +39,7 @@ import { CreatorInputChangeArtwork } from './creator.input.changeArtwork';
     }),
     BullModule.registerQueue({ name: 'creator' }),
     TypeOrmModule.forFeature([CreatorDbModel]),
+    AuthModule,
     TelegramModule,
     MediaModule,
     UserModule,
@@ -58,6 +60,7 @@ import { CreatorInputChangeArtwork } from './creator.input.changeArtwork';
     CreatorInputChangeArtwork,
   ],
 
+  controllers: [CreatorController],
   exports: [CreatorService],
 })
 export class CreatorModule {}

@@ -72,6 +72,11 @@ export abstract class TelegramInput {
     let step!: Step;
 
     try {
+      if (_.get(data, 'system.type') === 'action' && _.get(data, 'system.cmd') === 'stop') {
+        await this.telegramBot.deleteMessage(user.userTgId, _.get(data, 'message_id'));
+        return;
+      }
+
       let newProcess = false;
       if (!process) {
         process = await this.createProcess(user, data);

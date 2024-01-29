@@ -21,6 +21,7 @@ import { UserModule } from '@/microservice/user';
 import { CreatorModule } from '@/microservice/creator';
 import { SubscriptionLevelModule } from '@/microservice/subscriptionLevel';
 import { AgencyModule } from '@/microservice/agency';
+import { PostModule } from '@/microservice/post';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { AgencyModule } from '@/microservice/agency';
     CreatorModule,
     SubscriptionLevelModule,
     AgencyModule,
+    PostModule,
   ],
 })
 export class AppModule {}

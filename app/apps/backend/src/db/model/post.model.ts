@@ -1,5 +1,4 @@
 import { Column, PrimaryGeneratedColumn, Entity } from 'typeorm';
-import { DateTime } from 'luxon';
 
 export enum POST_TYPE {
   TEXT = 'text',
@@ -56,5 +55,5 @@ export class PostDbModel {
     nullable: false,
     default: 'NOW()',
   })
-  createdAt: DateTime;
+  createdAt: Date;
 }

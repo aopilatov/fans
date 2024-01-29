@@ -1,14 +1,16 @@
 import { Process, Processor, OnQueueStalled, OnQueueError, OnQueueActive } from '@nestjs/bull';
-import { Inject } from '@nestjs/common';
+import { forwardRef, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Job } from 'bull';
 import { InlineKeyboardButton } from 'node-telegram-bot-api';
 import { TelegramService } from '@/microservice/telegram';
 import { UserService } from '@/microservice/user';
-import { UserDbModel } from '@/db/model';
+import { MediaDbModel, UserDbModel } from '@/db/model';
 import { CreatorDbRepository } from '@/db/repository';
-import { CreatorService } from './creator.service';
+import { AuthService } from '@/microservice/auth';
 import { AgencyAdminService } from '@/microservice/agencyAdmin';
+import { SubscriptionLevelService } from '@/microservice/subscriptionLevel';
+import { MediaService } from '@/microservice/media';
 import { Cache } from 'cache-manager';
 import * as _ from 'lodash';
 
@@ -24,11 +26,13 @@ import { CreatorInputChangeArtwork } from './creator.input.changeArtwork';
 export class CreatorProcessor {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheService: Cache,
+    @Inject(forwardRef(() => SubscriptionLevelService)) protected readonly subscriptionLevelService: SubscriptionLevelService,
     private readonly creatorDbRepository: CreatorDbRepository,
-    private readonly creatorService: CreatorService,
+    private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly telegramService: TelegramService,
     private readonly agencyAdminService: AgencyAdminService,
+    protected readonly mediaService: MediaService,
 
     private readonly creatorInputCreate: CreatorInputCreate,
     private readonly creatorInputChangeName: CreatorInputChangeName,
@@ -61,6 +65,25 @@ export class CreatorProcessor {
   public async onProgress(job: Job): Promise<void> {
     const userTgId = parseInt(_.get(job, 'data.from.id', ''));
     // if (userTgId) await this.telegramService.flushCallbacks(userTgId);
+  }
+
+  @Process('auth')
+  public async getToken(job: Job): Promise<string> {
+    const userUuid = _.get(job, 'data.uuid');
+    const creatorUuid = _.get(job, 'data.creator');
+    const userTgToken = _.get(job, 'data.check');
+
+    if (!userUuid || !userTgToken) {
+      return null;
+    }
+
+    const user = await this.userService.getByUuid(userUuid);
+    if (!user) return;
+
+    const creator = await this.creatorDbRepository.findByUserAndUuid(user, creatorUuid);
+    if (!creator) return;
+
+    return this.authService.tokenForCreator(user, creator);
   }
 
   @Process('process')
@@ -206,7 +229,7 @@ export class CreatorProcessor {
 
       let keyboard = [
         [{ text: '⬅️ Back', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_fetch_all') }],
-        [{ text: '📚 Posts', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_posts_menu', { creator: contextProfile }) }],
+        [{ text: '📚 Posts', callback_data: await this.telegramService.registerCallback(user, 'post_get_menu', { creator: contextProfile }) }],
         [{ text: '💰 Subscription prices', callback_data: await this.telegramService.registerCallback(user, 'subscription_level_fetch_all', { creator: contextProfile }) }],
       ];
 
@@ -249,29 +272,6 @@ export class CreatorProcessor {
     } catch (e: unknown) {
       console.log(e);
     }
-  }
-
-  @Process('profile_posts_menu')
-  public async getPostsMenu(job: Job): Promise<void> {
-    const user = await this.userService.getOrCreate(job.data);
-    if (!user) return;
-
-    await this.cleanAllProcesses(user);
-
-    const contextProfile = _.get(job, 'data.system.cmd.context.creator');
-    const keyboard = [
-      [{ text: '⬅️ Back', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_menu', { creator: contextProfile }) }],
-      [{ text: '🌠 New post', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_menu', { creator: contextProfile }) }],
-      [{ text: '📚 Manage posts', callback_data: await this.telegramService.registerCallback(user, 'creator_profile_menu', { creator: contextProfile }) }],
-    ];
-
-    await this.telegramService.botCreator.editMessageText('Manage posts', {
-      chat_id: user.userTgId,
-      message_id: _.get(job.data, 'message.message_id'),
-      reply_markup: {
-        inline_keyboard: keyboard,
-      },
-    });
   }
 
   @Process('profile_edit_name')
@@ -344,5 +344,52 @@ export class CreatorProcessor {
     } catch (e: unknown) {
       console.log(e);
     }
+  }
+
+  @Process('get_creator')
+  public async getCreatorProfile(job: Job): Promise<Record<string, any>> {
+    const inputLogin = _.get(job, 'data.login');
+    if (!inputLogin) return;
+
+    const creator = await this.creatorDbRepository.findByLogin(inputLogin.toLowerCase());
+    if (!creator) return;
+
+    const levels = await this.subscriptionLevelService.getForCreator(creator);
+
+    let maxLevel = 1;
+    for (const level of levels) {
+      if (level.level > maxLevel) maxLevel = level.level;
+    }
+
+    const data = {
+      login: creator.login,
+      name: creator.name,
+      isVerified: creator.isVerified,
+      infoShort: creator.infoShort,
+      infoLong: creator.infoLong,
+      levels: levels.map(item => ({
+        level: item.level,
+        price: item.price,
+      })),
+      maxLevel,
+    };
+
+    let images: MediaDbModel[] = [];
+    if (creator?.image) {
+      images = await this.mediaService.getByMediaUuid(creator.image);
+      images = images.filter(item => item.transformation === 'none');
+      images.sort((a, b) => a.width - b.width);
+    }
+    _.set(data, 'image', images.map(item => _.pick(item, ['file', 'width', 'height'])));
+
+    let artworks: MediaDbModel[] = [];
+    if (creator?.artwork) {
+      artworks = await this.mediaService.getByMediaUuid(creator.artwork);
+      artworks = artworks.filter(item => item.transformation === 'none');
+      artworks.sort((a, b) => a.width - b.width);
+    }
+    _.set(data, 'artwork', artworks.map(item => _.pick(item, ['file', 'width', 'height'])));
+
+    return data;
   }
 }

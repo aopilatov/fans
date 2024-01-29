@@ -1,5 +1,4 @@
 import { Column, PrimaryGeneratedColumn, Entity } from 'typeorm';
-import { DateTime } from 'luxon';
 
 @Entity('creator')
 export class CreatorDbModel {
@@ -84,5 +83,5 @@ export class CreatorDbModel {
     nullable: false,
     default: 'NOW()',
   })
-  createdAt: DateTime;
+  createdAt: Date;
 }

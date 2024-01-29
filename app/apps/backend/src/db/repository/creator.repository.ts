@@ -21,6 +21,12 @@ export class CreatorDbRepository {
       .getOne();
   }
 
+  public async findByUuids(uuids: string[]): Promise<CreatorDbModel[]> {
+    return this.getBaseQuery()
+      .andWhere('creator.uuid IN (:...uuids)', { uuids })
+      .getMany();
+  }
+
   public async findByUser(user: UserDbModel): Promise<CreatorDbModel[]> {
     return this.getBaseQuery()
       .andWhere('creator.userUuid = :userUuid', { userUuid: user.uuid })

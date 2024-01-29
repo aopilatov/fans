@@ -11,3 +11,8 @@ export class UserAuthDto {
   @IsString()
   check: string;
 }
+
+export class CreatorAuthDto extends UserAuthDto {
+  @IsUUID()
+  creator: string;
+}

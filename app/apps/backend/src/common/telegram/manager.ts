@@ -122,6 +122,23 @@ export class TelegramHandlerManager {
       };
     }
 
+    if (_.has(req, 'body.message.media_group_id')) {
+      const mediaGroupId = _.get(req, 'body.message.media_group_id');
+      const mediaGroupCache = await TelegramHandlerManager.cacheService.get(`media_group:${mediaGroupId}`);
+      if (!mediaGroupCache) {
+        await TelegramHandlerManager.cacheService.set(`media_group:${mediaGroupId}`, 1);
+        response['system'] = {
+          type: 'media_group',
+          cmd: mediaGroupId,
+        };
+      } else {
+        response['system'] = {
+          type: 'action',
+          cmd: 'stop',
+        };
+      }
+    }
+
     if (!_.has(response, 'system.type')) {
       return;
     }

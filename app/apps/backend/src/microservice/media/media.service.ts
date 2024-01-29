@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MediaDbRepository } from '@/db/repository';
 import { DateTime } from 'luxon';
-import { MEDIA_TYPE, MEDIA_TRANSFORMATION } from '@/db/model';
+import { MEDIA_TYPE, MEDIA_TRANSFORMATION, MediaDbModel } from '@/db/model';
+import * as _ from 'lodash';
+import { ffprobe } from 'fluent-ffmpeg';
 import axios from 'axios';
 import Jimp from 'jimp';
 import * as fs from 'node:fs';
@@ -40,14 +42,20 @@ export class MediaService {
     return path.join(...dirPath);
   }
 
-  public async imageFromUrl(url: string, withResized: boolean = true, withBlurred: boolean = true, postCheck?: (image: Jimp) => void | Promise<void>): Promise<string> {
-    const mediaUuid = crypto.randomUUID();
-    const fileTmp = path.join(os.tmpdir(), mediaUuid);
+  private ffprobeSync(file: string) {
+    return new Promise((resolve, reject) => {
+      ffprobe(file, (err, metadata) => {
+        if (err) {
+          return reject(new Error(err))
+        } else {
+          return resolve(metadata);
+        }
+      });
+    });
+  }
 
+  private async saveImage(image: Jimp, mediaUuid: string, withResized: boolean = true, withBlurred: boolean = true, postCheck?: (image: Jimp) => void | Promise<void>): Promise<string> {
     try {
-      await this.download(url, fileTmp);
-      const image = await Jimp.read(fileTmp);
-
       if (postCheck) await postCheck(image);
 
       const imageBlurred = image.clone().blur(60);
@@ -64,9 +72,9 @@ export class MediaService {
 
       if (withResized) {
         images.push(...[
-          () => image.resize(1000, 1000 / coef).writeAsync(path.join(workDir, `${mediaUuid}_1000.png`)),
-          () => image.resize(200, 200 / coef).writeAsync(path.join(workDir, `${mediaUuid}_200.png`)),
-          () => image.resize(100, 100 / coef).writeAsync(path.join(workDir, `${mediaUuid}_100.png`)),
+          () => image.resize(1000, _.floor(1000 / coef)).writeAsync(path.join(workDir, `${mediaUuid}_1000.png`)),
+          () => image.resize(200, _.floor(200 / coef)).writeAsync(path.join(workDir, `${mediaUuid}_200.png`)),
+          () => image.resize(100, _.floor(100 / coef)).writeAsync(path.join(workDir, `${mediaUuid}_100.png`)),
         ]);
       }
 
@@ -77,37 +85,38 @@ export class MediaService {
 
         if (withResized) {
           images.push(...[
-            () => imageBlurred.resize(1000, 1000 / coef).writeAsync(path.join(workDir, `${uuidBlurred}_1000.png`)),
-            () => imageBlurred.resize(200, 200 / coef).writeAsync(path.join(workDir, `${uuidBlurred}_200.png`)),
-            () => imageBlurred.resize(100, 100 / coef).writeAsync(path.join(workDir, `${uuidBlurred}_100.png`)),
+            () => imageBlurred.resize(1000, _.floor(1000 / coef)).writeAsync(path.join(workDir, `${uuidBlurred}_1000.png`)),
+            () => imageBlurred.resize(200, _.floor(200 / coef)).writeAsync(path.join(workDir, `${uuidBlurred}_200.png`)),
+            () => imageBlurred.resize(100, _.floor(100 / coef)).writeAsync(path.join(workDir, `${uuidBlurred}_100.png`)),
           ]);
         }
       }
 
       await Promise.all(images.map(item => item()));
+      const fileShortDir = workDir.replace(this.configService.get('upload.dir'), '');
 
       const dbRows = [
-        () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.NONE, originWidth, originHeight, `${workDir}/${mediaUuid}.png`),
+        () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.NONE, originWidth, originHeight, `${fileShortDir}/${mediaUuid}.png`),
       ];
 
       if (withResized) {
         dbRows.push(...[
-          () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.NONE, 100, 100 / coef, `${workDir}/${mediaUuid}_100.png`),
-          () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.NONE, 200, 200 / coef, `${workDir}/${mediaUuid}_200.png`),
-          () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.NONE, 1000, 1000 / coef, `${workDir}/${mediaUuid}_1000.png`),
+          () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.NONE, 100, _.floor(100 / coef), `${fileShortDir}/${mediaUuid}_100.png`),
+          () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.NONE, 200, _.floor(200 / coef), `${fileShortDir}/${mediaUuid}_200.png`),
+          () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.NONE, 1000, _.floor(1000 / coef), `${fileShortDir}/${mediaUuid}_1000.png`),
         ]);
       }
 
       if (withBlurred) {
         dbRows.push(...[
-          () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.BLUR, originWidth, originHeight, `${workDir}/${uuidBlurred}.png`),
+          () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.BLUR, originWidth, originHeight, `${fileShortDir}/${uuidBlurred}.png`),
         ]);
 
         if (withResized) {
           dbRows.push(...[
-            () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.BLUR, 100, 100 / coef, `${workDir}/${uuidBlurred}_100.png`),
-            () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.BLUR, 200, 200 / coef, `${workDir}/${uuidBlurred}_200.png`),
-            () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.BLUR, 1000, 1000 / coef, `${workDir}/${uuidBlurred}_1000.png`),
+            () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.BLUR, 100, _.floor(100 / coef), `${fileShortDir}/${uuidBlurred}_100.png`),
+            () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.BLUR, 200, _.floor(200 / coef), `${fileShortDir}/${uuidBlurred}_200.png`),
+            () => this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.IMAGE, MEDIA_TRANSFORMATION.BLUR, 1000, _.floor(1000 / coef), `${fileShortDir}/${uuidBlurred}_1000.png`),
           ]);
         }
       }
@@ -119,5 +128,52 @@ export class MediaService {
       console.log('err image upload', e);
       throw e;
     }
+  }
+
+  public async imageFromUrl(url: string, withResized: boolean = true, withBlurred: boolean = true, postCheck?: (image: Jimp) => void | Promise<void>): Promise<string> {
+    const mediaUuid = crypto.randomUUID();
+    const fileTmp = path.join(os.tmpdir(), mediaUuid);
+
+    await this.download(url, fileTmp);
+    const image = await Jimp.read(fileTmp);
+
+    return this.saveImage(image, mediaUuid, withResized, withBlurred, postCheck);
+  }
+
+  public async imageFromUpload(buf: Buffer, withResized: boolean = true, withBlurred: boolean = true, postCheck?: (image: Jimp) => void | Promise<void>): Promise<string> {
+    const mediaUuid = crypto.randomUUID();
+    const fileTmp = path.join(os.tmpdir(), mediaUuid);
+
+    await fs.promises.writeFile(fileTmp, buf);
+    const image = await Jimp.read(fileTmp);
+
+    return this.saveImage(image, mediaUuid, withResized, withBlurred, postCheck);
+  }
+
+  public async videoFromUpload(buf: Buffer): Promise<string> {
+    const mediaUuid = crypto.randomUUID();
+    const fileTmp = path.join(os.tmpdir(), mediaUuid);
+    const workDir = await this.getWorkDir();
+    const fileShortDir = workDir.replace(this.configService.get('upload.dir'), '');
+
+    await fs.promises.writeFile(fileTmp, buf);
+    const metadata = await this.ffprobeSync(fileTmp);
+    const streamMetadata = _.get(metadata, 'streams', []).find(stream => stream.codec_type === 'video');
+    const originWidth = _.get(streamMetadata, 'width', 0);
+    const originHeight = _.get(streamMetadata, 'height', 0);
+    const name = `${mediaUuid}.${_.get(metadata, 'format.format_name', 'mov').split(',')[0]}`;
+
+    await fs.promises.copyFile(fileTmp, path.join(workDir, name));
+    await this.mediaDbRepository.create(mediaUuid, MEDIA_TYPE.VIDEO, MEDIA_TRANSFORMATION.NONE, originWidth, originHeight, `${fileShortDir}/${name}`)
+
+    return mediaUuid;
+  }
+
+  public async getByMediaUuid(mediaUuid: string): Promise<MediaDbModel[]> {
+    return this.mediaDbRepository.findByMediaUuid(mediaUuid);
+  }
+
+  public async getByMediaUuids(mediaUuids: string[]): Promise<MediaDbModel[]> {
+    return this.mediaDbRepository.findByMediaUuids(mediaUuids);
   }
 }

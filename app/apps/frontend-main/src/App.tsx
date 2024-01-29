@@ -28,7 +28,7 @@ const App: FC = () => {
     <span className="loading loading-spinner text-info"></span>
   </div>}>
     {toasts?.length > 0 && <div className="fixed top-0 left-0 z-50" key={ toastsState }>
-      <div className="w-11/12 toast toast-top toast-center">
+      <div className="toast toast-top toast-center min-w-full whitespace-normal">
         { toasts.map(toast => <div
           key={toast.uuid}
           className={classnames({

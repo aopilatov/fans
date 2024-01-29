@@ -4,6 +4,7 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { fastify } from 'fastify';
 import { AppModule } from './app.module';
 import { randomUUID } from 'node:crypto';
+import multiPart from '@fastify/multipart';
 import * as process from 'node:process';
 
 import middlewareOnRequest from './middleware/onRequest.middleware';
@@ -17,6 +18,7 @@ const fastifyInstance = fastify({
 
 middlewareOnRequest(fastifyInstance);
 middlewareOnResponse(fastifyInstance);
+fastifyInstance.register(multiPart, { limits: { files: 20, fileSize: 1073741824 } });
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(fastifyInstance as any), {

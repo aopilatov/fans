@@ -1,5 +1,4 @@
 import { Column, PrimaryGeneratedColumn, Entity } from 'typeorm';
-import { DateTime } from 'luxon';
 
 @Entity('subscription_level')
 export class SubscriptionLevelDbModel {
@@ -32,7 +31,7 @@ export class SubscriptionLevelDbModel {
     type: 'timestamptz',
     nullable: true,
   })
-  deletedAt: DateTime;
+  deletedAt: Date;
 
   @Column({
     name: 'created_at',
@@ -40,5 +39,5 @@ export class SubscriptionLevelDbModel {
     nullable: false,
     default: 'NOW()',
   })
-  createdAt: DateTime;
+  createdAt: Date;
 }

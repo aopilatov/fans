@@ -2,9 +2,9 @@ import { FC, useEffect, useState } from 'react';
 import { Post } from '@fans/types';
 import { useLocation, Link } from 'react-router-dom';
 import classnames from 'classnames';
+import _ from 'lodash';
 
 import ContentDefault from '@/components/content/default.tsx';
-import _ from 'lodash';
 
 type Tabs = 'posts' | 'photo' | 'video';
 

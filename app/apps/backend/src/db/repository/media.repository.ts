@@ -21,10 +21,16 @@ export class MediaDbRepository {
       .getOne();
   }
 
-  public async findByMediaUuid(mediaUuid: string): Promise<MediaDbModel> {
+  public async findByMediaUuid(mediaUuid: string): Promise<MediaDbModel[]> {
     return this.getBaseQuery()
       .andWhere('media.mediaUuid = :mediaUuid', { mediaUuid })
-      .getOne();
+      .getMany();
+  }
+
+  public async findByMediaUuids(mediaUuids: string[]): Promise<MediaDbModel[]> {
+    return this.getBaseQuery()
+      .andWhere('media.mediaUuid IN (:...mediaUuids)', { mediaUuids })
+      .getMany();
   }
 
   public async create(mediaUuid: string, type: MEDIA_TYPE, transformation: MEDIA_TRANSFORMATION, width: number, height: number, file: string): Promise<MediaDbModel> {

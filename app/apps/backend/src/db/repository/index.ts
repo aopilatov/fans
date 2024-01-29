@@ -6,3 +6,4 @@ export * from './creator.repository';
 export * from './media.repository';
 export * from './subscriptionLevel.repository';
 export * from './post.repository';
+export * from './subscription.repository';

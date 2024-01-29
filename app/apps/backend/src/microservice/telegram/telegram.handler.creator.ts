@@ -10,6 +10,7 @@ export class TelegramHandlerCreator {
     @InjectQueue('creator') private readonly creatorQueue: Queue,
     @InjectQueue('subscriptionLevel') private readonly subscriptionLevelQueue: Queue,
     @InjectQueue('agency') private readonly agencyQueue: Queue,
+    @InjectQueue('post') private readonly postQueue: Queue,
   ) {}
 
   @TelegramCommand('/start')
@@ -26,6 +27,11 @@ export class TelegramHandlerCreator {
   @TelegramProcess('subscription_level')
   public async processHandlerSubscriptionLevel(data: Record<string, any>): Promise<void> {
     await this.subscriptionLevelQueue.add('process', data);
+  }
+
+  @TelegramProcess('post')
+  public async processHandlerPost(data: Record<string, any>): Promise<void> {
+    await this.postQueue.add('process', data);
   }
 
   @TelegramProcess('agency')
@@ -46,11 +52,6 @@ export class TelegramHandlerCreator {
   @TelegramCallbackQuery('creator_profile_menu')
   public async profileMenu(data: Record<string, any>): Promise<void> {
     await this.creatorQueue.add('profile_menu', data);
-  }
-
-  @TelegramCallbackQuery('creator_profile_posts_menu')
-  public async profilePostNew(data: Record<string, any>): Promise<void> {
-    await this.creatorQueue.add('profile_posts_menu', data);
   }
 
   @TelegramCallbackQuery('creator_profile_edit_name')
@@ -141,6 +142,16 @@ export class TelegramHandlerCreator {
   @TelegramCallbackQuery('agency_accept_invite_decline')
   public async profileAgencyAcceptInviteDecline(data: Record<string, any>): Promise<void> {
     await this.agencyQueue.add('accept_invite_decline', data);
+  }
+
+  @TelegramCallbackQuery('post_get_menu')
+  public async profilePostMenu(data: Record<string, any>): Promise<void> {
+    await this.postQueue.add('get_menu', data);
+  }
+
+  @TelegramCallbackQuery('post_app_create')
+  public async profilePostNew(data: Record<string, any>): Promise<void> {
+    await this.postQueue.add('app_create', data);
   }
 
 }

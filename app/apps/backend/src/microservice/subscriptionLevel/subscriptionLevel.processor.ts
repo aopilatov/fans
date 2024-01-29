@@ -153,7 +153,7 @@ export class SubscriptionLevelProcessor {
 
     const creator = await this.creatorService.getCreator(user, _.get(job.data, 'system.cmd.context.creator'));
     const level = await this.subscriptionLevelDbRepository.findByUuid(_.get(job.data, 'system.cmd.context.level'));
-    await this.subscriptionLevelDbRepository.update({ ...level, deletedAt: DateTime.now() });
+    await this.subscriptionLevelDbRepository.update({ ...level, deletedAt: DateTime.now().toJSDate() });
     await this.subscriptionLevelService.updateCreatorMaxLevel(creator);
 
     const keyboard = [

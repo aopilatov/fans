@@ -8,6 +8,14 @@ export class CreatorService {
     private readonly creatorDbRepository: CreatorDbRepository,
   ) {}
 
+  public async getByUuid(uuid: string): Promise<CreatorDbModel> {
+    return this.creatorDbRepository.findByUuid(uuid);
+  }
+
+  public async getByUuids(uuids: string[]): Promise<CreatorDbModel[]> {
+    return this.creatorDbRepository.findByUuids(uuids);
+  }
+
   public async getCreator(user: UserDbModel, uuid: string): Promise<CreatorDbModel> {
     return this.creatorDbRepository.findByUserAndUuid(user, uuid);
   }
