@@ -27,10 +27,10 @@ export class CreatorProcessor {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheService: Cache,
     @Inject(forwardRef(() => SubscriptionLevelService)) protected readonly subscriptionLevelService: SubscriptionLevelService,
+    @Inject(forwardRef(() => UserService)) protected readonly userService: UserService,
+    @Inject(forwardRef(() => TelegramService)) protected readonly telegramService: TelegramService,
     private readonly creatorDbRepository: CreatorDbRepository,
     private readonly authService: AuthService,
-    private readonly userService: UserService,
-    private readonly telegramService: TelegramService,
     private readonly agencyAdminService: AgencyAdminService,
     protected readonly mediaService: MediaService,
 

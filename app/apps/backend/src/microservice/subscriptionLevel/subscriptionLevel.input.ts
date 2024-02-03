@@ -12,7 +12,7 @@ export abstract class SubscriptionLevelInput extends TelegramInput {
   constructor(
     @Inject(CACHE_MANAGER) protected cacheService: Cache,
     @Inject(forwardRef(() => CreatorService)) protected creatorService: CreatorService,
-    protected telegramService: TelegramService,
+    @Inject(forwardRef(() => TelegramService)) protected telegramService: TelegramService,
     protected subscriptionLevelService: SubscriptionLevelService,
   ) {
     super(telegramService.botCreator);

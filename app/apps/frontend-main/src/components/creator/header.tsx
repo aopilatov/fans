@@ -11,14 +11,16 @@ interface Props {
 }
 
 const CreatorHeader: FC<Props> = ({ creator, subscription }: Props) => {
+  const cdn = _.get(window, 'cdn.value', '');
   const prefix = _.get(window, 'prefix.value', '');
+
   const [infoLongIsShowed, setInfoLongIsShowed] = useState<boolean>(false);
 
   return <>
     { creator && subscription && <div className="w-full flex flex-col">
       <div className="w-full">
         <img
-          src={ creator?.artwork  || 'https://placehold.co/562x180' }
+          src={ creator?.artwork?.length > 0 ? `${cdn}${creator.artwork.find(item => item.width === 200)}` : '/artwork-noimg.png' }
           className="w-full"
           alt="alt"
         />
@@ -28,7 +30,7 @@ const CreatorHeader: FC<Props> = ({ creator, subscription }: Props) => {
           style={{ marginTop: '-40px' }}
         >
           <img
-            src={ creator?.image || 'https://placehold.co/180x180' }
+            src={ creator?.image?.length > 0 ? `${cdn}${creator.image.find(item => item.width === 100)}` : '/creator-noimg.png' }
             className="border-4 rounded-full w-24"
             alt="ava"
           />

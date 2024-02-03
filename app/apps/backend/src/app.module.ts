@@ -12,6 +12,7 @@ import {
   AgencyInviteDbModel,
   CreatorDbModel,
   MediaDbModel,
+  SubscriptionDbModel,
   SubscriptionLevelDbModel,
   PostDbModel,
 } from '@/db/model';
@@ -66,6 +67,7 @@ import { PostModule } from '@/microservice/post';
           AgencyInviteDbModel,
           CreatorDbModel,
           MediaDbModel,
+          SubscriptionDbModel,
           SubscriptionLevelDbModel,
           PostDbModel
         ],

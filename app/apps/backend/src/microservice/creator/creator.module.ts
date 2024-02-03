@@ -40,10 +40,10 @@ import { CreatorInputChangeArtwork } from './creator.input.changeArtwork';
     BullModule.registerQueue({ name: 'creator' }),
     TypeOrmModule.forFeature([CreatorDbModel]),
     AuthModule,
-    TelegramModule,
     MediaModule,
-    UserModule,
     AgencyAdminModule,
+    forwardRef(() => TelegramModule),
+    forwardRef(() => UserModule),
     forwardRef(() => SubscriptionLevelModule),
   ],
 

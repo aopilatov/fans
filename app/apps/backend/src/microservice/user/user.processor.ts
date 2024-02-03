@@ -1,7 +1,9 @@
+import { forwardRef, Inject } from '@nestjs/common';
 import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 import { UserDbRepository } from '@/db/repository';
 import { AuthService } from '@/microservice/auth';
+import { SubscriptionService } from '@/microservice/subscription';
 import { UserService } from './user.service';
 import { jwtDecode } from 'jwt-decode';
 import * as _ from 'lodash';
@@ -9,6 +11,7 @@ import * as _ from 'lodash';
 @Processor('user')
 export class UserProcessor {
   constructor(
+    @Inject(forwardRef(() => SubscriptionService)) private readonly subscriptionService: SubscriptionService,
     private readonly authService: AuthService,
     private readonly userDbRepository: UserDbRepository,
     private readonly userService: UserService,
@@ -31,14 +34,22 @@ export class UserProcessor {
   }
 
   @Process('self')
-  public async getSelf(job: Job): Promise<string> {
+  public async getSelf(job: Job): Promise<Record<string, any>> {
     const encodedToken = _.get(job, 'data.token', '');
     const decodedToken = jwtDecode<any>(encodedToken);
     if (!decodedToken?.sub) return;
 
-    const user = await this.userService.getOrCreate(decodedToken?.sub);
+    const user = await this.userService.getByUuid(decodedToken?.sub);
     if (!user) return;
 
-
+    return {
+      subscriptions: {
+        count: await this.subscriptionService.getCountForUser(user),
+      },
+      balance: {
+        amount: 12,
+        currency: 'USDT',
+      },
+    };
   }
 }

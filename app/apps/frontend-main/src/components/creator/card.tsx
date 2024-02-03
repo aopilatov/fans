@@ -8,20 +8,22 @@ interface Props {
 }
 
 const CreatorCard: FC<Props> = ({ creator }: Props) => {
+  const cdn = _.get(window, 'cdn.value', '');
   const prefix = _.get(window, 'prefix.value', '');
+
   return <Link to={ `${prefix}/creator/${creator.login}` }>
     <div
       className="bshadow-xl rounded-lg bg-contain bg-center"
       style={{
         height: _.floor(window.innerWidth / 562 * 180),
-        backgroundImage: `url(${creator?.artwork || 'https://placehold.co/562x180'})`,
+        backgroundImage: `url(${creator?.artwork?.length > 0 ? cdn + creator.artwork.find(item => item.width === 200).file : '/artwork-noimg.png'})`,
       }}
     >
       <div className="w-full h-full flex items-center">
         <img
-          src={ creator?.image || 'https://placehold.co/180x180' }
+          src={ creator?.image?.length > 0 ? `${cdn}${creator.image.find(item => item.width === 100).file}` : '/creator-noimg.png' }
           className="bg-contain bg-center h-2/3 border-4 rounded-full mx-2"
-          alt="ava"
+          alt={ creator.login }
         />
 
         <div className="text-base antialiased font-medium text-white p-1 rounded-md bg-gradient-to-r from-purple-500 to-pink-500">@{ creator.login }</div>

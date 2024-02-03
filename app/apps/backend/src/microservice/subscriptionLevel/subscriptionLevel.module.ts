@@ -29,8 +29,8 @@ import { SubscriptionLevelInputAdd } from './subscriptionLevel.input.add';
     }),
     BullModule.registerQueue({ name: 'subscriptionLevel' }),
     TypeOrmModule.forFeature([SubscriptionLevelDbModel]),
-    TelegramModule,
-    UserModule,
+    forwardRef(() => TelegramModule),
+    forwardRef(() => UserModule),
     forwardRef(() => CreatorModule),
   ],
 

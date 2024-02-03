@@ -2,18 +2,21 @@ import { FC, useEffect, useState } from 'react';
 import { Creator, Post, PostType, Subscription } from '@fans/types';
 import { useParams } from 'react-router-dom';
 import { store } from '@/stores';
-import AppLayout from '@/layouts/app.layout.tsx';
+import api from '@/api';
 
+import AppLayout from '@/layouts/app.layout.tsx';
 import CreatorHeader from '@/components/creator/header.tsx';
 import CreatorContent from '@/components/creator/content.tsx';
 
 const PageCreatorProfile: FC = () => {
   const { login } = useParams();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [creator, setCreator] = useState<Creator>(null);
   const [subscription, setSubscription] = useState<Subscription>(null);
-  const [creatorPosts, setCreatorPosts] = useState<Post[]>(null);
-  const [creatorPhotos, setCreatorPhotos] = useState<Post[]>(null);
-  const [creatorVideos, setCreatorVideos] = useState<Post[]>(null);
+  const [creatorPosts, setCreatorPosts] = useState<Post[]>([]);
+  const [creatorPhotos, setCreatorPhotos] = useState<Post[]>([]);
+  const [creatorVideos, setCreatorVideos] = useState<Post[]>([]);
 
   useEffect(() => {
     store.dispatch({ type: 'app/setMenuBack', payload: true });
@@ -21,16 +24,9 @@ const PageCreatorProfile: FC = () => {
 
   useEffect(() => {
     if (login) {
-      setCreator(() => ({
-        isVerified: true,
-        login: 'sax',
-        artwork: 'https://placehold.co/562x180',
-        image: 'https://placehold.co/180x180',
-        name: 'Alex Opilatov',
-        infoShort: 'Lover, dreamer, & host of Let’s Get Real 🎙️ ✨🌹',
-        infoLong: 'Legal Disclaimer: All content published on this OnlyFans, Inc account is exclusive copyrighted material belonging to HOUSEOFGRACEY. Patrons may not distribute or publish any content from my OnlyFans, or private accounts, including but not limited to videos, photographs and any other such content that is posted here. Violation of this will result in legal action. You also may not screenshot or screen record any private content. By signing up for my OnlyFans you consent that you are at least 18 years old, and agree to these terms and conditions.',
-        maxLevel: 2,
-      }));
+      setIsLoading(() => true);
+      Promise.all([getCreator].map(item => item()))
+        .finally(() => setIsLoading(() => false));
 
       setSubscription(() => ({
         isSubscribed: true,
@@ -378,17 +374,29 @@ const PageCreatorProfile: FC = () => {
     }
   }, [login]);
 
+  const getCreator = () => {
+    api.creator.get(login)
+      .then((data: any) => setCreator(() => data));
+  };
+
   return <AppLayout>
-    <CreatorHeader creator={ creator } subscription={ subscription } />
-    <div className="p-2">
-      <CreatorContent
-        creator={ creator }
-        posts={ creatorPosts }
-        photos={ creatorPhotos }
-        videos={ creatorVideos }
-        showLinkToCreator={ false }
-      />
-    </div>
+    { isLoading && <div className="w-full flex justify-center">
+      <span className="loading loading-spinner loading-lg"></span>
+    </div> }
+
+    { !isLoading && creator && <>
+      <CreatorHeader creator={ creator } subscription={ subscription } />
+
+      <div className="p-2">
+        <CreatorContent
+          creator={ creator }
+          posts={ creatorPosts }
+          photos={ creatorPhotos }
+          videos={ creatorVideos }
+          showLinkToCreator={ false }
+        />
+      </div>
+    </> }
   </AppLayout>;
 };
 

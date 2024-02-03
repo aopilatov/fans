@@ -19,10 +19,10 @@ export class SubscriptionLevelProcessor {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheService: Cache,
     @Inject(forwardRef(() => CreatorService)) private readonly creatorService: CreatorService,
+    @Inject(forwardRef(() => TelegramService)) private readonly telegramService: TelegramService,
+    @Inject(forwardRef(() => UserService)) private readonly userService: UserService,
     private readonly subscriptionLevelDbRepository: SubscriptionLevelDbRepository,
-    private readonly telegramService: TelegramService,
     private readonly subscriptionLevelService: SubscriptionLevelService,
-    private readonly userService: UserService,
 
     private readonly subscriptionLevelInputAdd: SubscriptionLevelInputAdd,
   ) {}

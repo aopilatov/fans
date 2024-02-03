@@ -13,7 +13,7 @@ export abstract class CreatorInput extends TelegramInput {
   constructor(
     @Inject(CACHE_MANAGER) protected cacheService: Cache,
     @Inject(forwardRef(() => SubscriptionLevelService)) protected readonly subscriptionLevelService: SubscriptionLevelService,
-    protected telegramService: TelegramService,
+    @Inject(forwardRef(() => TelegramService)) protected readonly telegramService: TelegramService,
     protected readonly mediaService: MediaService,
     protected readonly creatorDbRepository: CreatorDbRepository,
   ) {

@@ -8,12 +8,14 @@ import { TelegramModule } from '@/microservice/telegram';
 import { UserDbRepository } from '@/db/repository';
 import { UserDbModel } from '@/db/model';
 import { AuthModule } from '@/microservice/auth';
+import { SubscriptionModule } from '@/microservice/subscription';
 
 @Module({
   imports: [
     BullModule.registerQueue({ name: 'user' }),
     TypeOrmModule.forFeature([UserDbModel]),
     forwardRef(() => TelegramModule),
+    forwardRef(() => SubscriptionModule),
     AuthModule,
   ],
   controllers: [UserController],
