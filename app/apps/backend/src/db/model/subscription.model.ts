@@ -27,6 +27,14 @@ export class SubscriptionDbModel {
   subscriptionLevelUuid: string;
 
   @Column({
+    name: 'is_notificationed',
+    type: 'boolean',
+    nullable: false,
+    default: false,
+  })
+  isNotificationed: boolean;
+
+  @Column({
     name: 'created_at',
     type: 'timestamptz',
     nullable: false,

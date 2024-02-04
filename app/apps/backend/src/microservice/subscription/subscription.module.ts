@@ -6,6 +6,7 @@ import { SubscriptionDbRepository } from '@/db/repository';
 import { UserModule } from '@/microservice/user';
 import { CreatorModule } from '@/microservice/creator';
 import { MediaModule } from '@/microservice/media';
+import { SubscriptionLevelModule } from '@/microservice/subscriptionLevel';
 import { SubscriptionController } from './subscription.controller';
 import { SubscriptionProcessor } from './subscription.processor';
 import { SubscriptionService } from './subscription.service';
@@ -16,6 +17,7 @@ import { SubscriptionService } from './subscription.service';
     TypeOrmModule.forFeature([SubscriptionDbModel]),
     forwardRef(() => UserModule),
     forwardRef(() => CreatorModule),
+    forwardRef(() => SubscriptionLevelModule),
     MediaModule,
   ],
   controllers: [SubscriptionController],

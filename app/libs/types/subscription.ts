@@ -1,13 +1,13 @@
 export interface Subscription {
   isSubscribed: boolean;
   isNotificationTurnedOn: boolean;
-  level: SubscriptionLevel;
+  level: number;
   prices: SubscriptionPrice[];
 }
 
 export type SubscriptionLevel = 1 | 2 | 3;
 
 export interface SubscriptionPrice {
-  level: SubscriptionLevel;
+  level: number;
   price: number;
 }

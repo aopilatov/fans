@@ -9,6 +9,7 @@ export class migration1706541223000 implements MigrationInterface {
         "user_uuid" UUID NOT NULL,
         "creator_uuid" UUID NOT NULL,
         "subscription_level_uuid" UUID NOT NULL,
+        "is_notificationed"  BOOLEAN DEFAULT false,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
 

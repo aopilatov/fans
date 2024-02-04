@@ -15,6 +15,13 @@ export class SubscriptionDbRepository {
       .createQueryBuilder('subscription');
   }
 
+  public async getOne(user: UserDbModel, creator: CreatorDbModel): Promise<SubscriptionDbModel> {
+    return this.getBaseQuery()
+      .andWhere('subscription.userUuid = :userUuid', { userUuid: user.uuid })
+      .andWhere('subscription.creatorUuid = :creatorUuid', { creatorUuid: creator.uuid })
+      .getOne();
+  }
+
   public async getListForUser(user: UserDbModel): Promise<SubscriptionDbModel[]> {
     return this.getBaseQuery()
       .andWhere('subscription.userUuid = :userUuid', { userUuid: user.uuid })
@@ -35,6 +42,10 @@ export class SubscriptionDbRepository {
       subscriptionLevelUuid: subscriptionLevel.uuid,
     });
 
+    return this.repository.save(subscription);
+  }
+
+  public async edit(subscription: SubscriptionDbModel): Promise<SubscriptionDbModel> {
     return this.repository.save(subscription);
   }
 

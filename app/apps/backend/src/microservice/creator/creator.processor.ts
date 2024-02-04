@@ -355,12 +355,6 @@ export class CreatorProcessor {
     if (!creator) return;
 
     const levels = await this.subscriptionLevelService.getForCreator(creator);
-
-    let maxLevel = 1;
-    for (const level of levels) {
-      if (level.level > maxLevel) maxLevel = level.level;
-    }
-
     const data = {
       login: creator.login,
       name: creator.name,
@@ -371,7 +365,7 @@ export class CreatorProcessor {
         level: item.level,
         price: item.price,
       })),
-      maxLevel,
+      maxLevel: creator.maxLevel,
     };
 
     let images: MediaDbModel[] = [];

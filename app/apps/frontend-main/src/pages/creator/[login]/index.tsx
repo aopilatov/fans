@@ -25,18 +25,8 @@ const PageCreatorProfile: FC = () => {
   useEffect(() => {
     if (login) {
       setIsLoading(() => true);
-      Promise.all([getCreator].map(item => item()))
+      Promise.all([getCreator, getSubscription].map(item => item()))
         .finally(() => setIsLoading(() => false));
-
-      setSubscription(() => ({
-        isSubscribed: true,
-        isNotificationTurnedOn: true,
-        level: 1,
-        prices: [{
-          level: 1,
-          price: 0,
-        }],
-      }));
 
       setCreatorPosts(() => ([
         {
@@ -377,6 +367,11 @@ const PageCreatorProfile: FC = () => {
   const getCreator = () => {
     api.creator.get(login)
       .then((data: any) => setCreator(() => data));
+  };
+
+  const getSubscription = () => {
+    api.subscription.getOne(login)
+      .then((data: any) => setSubscription(() => data));
   };
 
   return <AppLayout>
