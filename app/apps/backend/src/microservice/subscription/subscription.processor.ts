@@ -82,7 +82,7 @@ export class SubscriptionProcessor {
     if (!creator) return;
 
     const subscription = await this.subscriptionService.getOne(user, creator);
-    const levels = await this.subscriptionLevelService.getForCreator(creator);
+    const levels = await this.subscriptionLevelService.getByCreator(creator);
 
     return {
       isSubscribed: !!subscription,
@@ -109,7 +109,7 @@ export class SubscriptionProcessor {
     if (!creator) return;
 
     const subscription = await this.subscriptionService.getOne(user, creator);
-    const levels = await this.subscriptionLevelService.getForCreator(creator);
+    const levels = await this.subscriptionLevelService.getByCreator(creator);
 
     if (!level) {
       if (!subscription) {

@@ -354,7 +354,7 @@ export class CreatorProcessor {
     const creator = await this.creatorDbRepository.findByLogin(inputLogin.toLowerCase());
     if (!creator) return;
 
-    const levels = await this.subscriptionLevelService.getForCreator(creator);
+    const levels = await this.subscriptionLevelService.getByCreator(creator);
     const data = {
       login: creator.login,
       name: creator.name,

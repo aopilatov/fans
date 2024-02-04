@@ -1,6 +1,7 @@
 import { Controller, UseGuards, Post, Get, Res, Body, Headers, Param, Put } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 import { CreatorGuard } from '@/guard/creator.guard';
+import { UserGuard } from '@/guard/user.guard';
 import { PostCreateDto, PostEditDto } from './post.types';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
@@ -11,6 +12,31 @@ export class PostController {
   constructor(
     @InjectQueue('post') private readonly postQueue: Queue,
   ) {}
+
+  @UseGuards(UserGuard)
+  @Get(':creator')
+  public async listForUser(
+    @Headers() headers: Record<string, any>,
+    @Param('creator') creator: string,
+    @Res() res: FastifyReply
+  ): Promise<any> {
+    try {
+      const token = _.get(headers, 'x-authorization');
+      const job = await this.postQueue.add('listForUser', { token, creator });
+      const result = await job.finished();
+      if (!result) {
+        throw new Error('Can not fetch posts');
+      }
+
+      return res.code(200)
+        .header('Content-Type', 'application/json')
+        .send(result);
+    } catch (e: unknown) {
+      return res.code(_.get(e, 'code', 500))
+        .header('Content-Type', 'application/json')
+        .send({ message: _.get(e, 'message', 'Internal server error') });
+    }
+  }
 
   @UseGuards(CreatorGuard)
   @Get('/full')

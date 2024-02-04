@@ -18,6 +18,10 @@ export class SubscriptionService {
     return this.subscriptionDbRepository.getListForUser(user);
   }
 
+  public async getListForUserAndCreators(user: UserDbModel, creators: CreatorDbModel[]): Promise<SubscriptionDbModel[]> {
+    return this.subscriptionDbRepository.getListForUserAndCreators(user, creators);
+  }
+
   public async getOne(user: UserDbModel, creator: CreatorDbModel): Promise<SubscriptionDbModel> {
     return this.subscriptionDbRepository.getOne(user, creator);
   }

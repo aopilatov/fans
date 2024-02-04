@@ -10,8 +10,12 @@ export class SubscriptionLevelService {
     @Inject(forwardRef(() => CreatorService)) private readonly creatorService: CreatorService,
   ) {}
 
-  public async getForCreator(creator: CreatorDbModel): Promise<SubscriptionLevelDbModel[]> {
+  public async getByCreator(creator: CreatorDbModel): Promise<SubscriptionLevelDbModel[]> {
     return this.subscriptionLevelDbRepository.findByCreator(creator);
+  }
+
+  public async getByCreators(creators: CreatorDbModel[]): Promise<SubscriptionLevelDbModel[]> {
+    return this.subscriptionLevelDbRepository.findByCreators(creators);
   }
 
   public async create(creator: CreatorDbModel, price: number): Promise<SubscriptionLevelDbModel> {

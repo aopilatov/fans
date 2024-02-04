@@ -27,6 +27,12 @@ export class SubscriptionLevelDbRepository {
       .getMany();
   }
 
+  public async findByCreators(creators: CreatorDbModel[]): Promise<SubscriptionLevelDbModel[]> {
+    return this.getBaseQuery()
+      .andWhere('subscriptionLevel.creatorUuid IN (:...creatorUuids)', { creatorUuids: creators.map(item => item.uuid) })
+      .getMany();
+  }
+
   public async findMaxByCreator(creator: CreatorDbModel): Promise<SubscriptionLevelDbModel> {
     return this.getBaseQuery()
       .andWhere('subscriptionLevel.creatorUuid = :creatorUuid', { creatorUuid: creator.uuid })

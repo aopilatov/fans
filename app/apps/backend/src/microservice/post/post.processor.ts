@@ -2,11 +2,13 @@ import { forwardRef, Inject } from '@nestjs/common';
 import { OnQueueActive, OnQueueError, OnQueueStalled, Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 import { jwtDecode } from 'jwt-decode';
-import { CreatorDbModel, MEDIA_TYPE, MediaDbModel, PostDbModel, UserDbModel } from '@/db/model';
+import { CreatorDbModel, MEDIA_TYPE, MediaDbModel, PostDbModel, SubscriptionDbModel, UserDbModel } from '@/db/model';
 import { TelegramService } from '@/microservice/telegram';
 import { UserService } from '@/microservice/user';
 import { CreatorService } from '@/microservice/creator';
 import { MediaService } from '@/microservice/media';
+import { SubscriptionService } from '@/microservice/subscription';
+import { SubscriptionLevelService } from '@/microservice/subscriptionLevel';
 import { PostService } from './post.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -21,6 +23,8 @@ export class PostProcessor {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheService: Cache,
     @Inject(forwardRef(() => CreatorService)) private readonly creatorService: CreatorService,
+    @Inject(forwardRef(() => SubscriptionService)) private readonly subscriptionService: SubscriptionService,
+    @Inject(forwardRef(() => SubscriptionLevelService)) private readonly subscriptionLevelService: SubscriptionLevelService,
     private readonly configService: ConfigService,
     private readonly telegramService: TelegramService,
     private readonly userService: UserService,
@@ -98,7 +102,7 @@ export class PostProcessor {
     });
   }
 
-  private async getPostObjects(posts: PostDbModel[], creator?: CreatorDbModel, skipSubscription?: boolean): Promise<Record<string, any>[]> {
+  private async getPostObjects(posts: PostDbModel[], creator?: CreatorDbModel, user?: UserDbModel): Promise<Record<string, any>[]> {
     const data = [];
 
     if (posts?.length) {
@@ -117,6 +121,8 @@ export class PostProcessor {
         if (post.creatorUuid !== creator?.uuid) creatorsUuids.push(post.creatorUuid);
       }
       const postCreators = creator ? [creator] : await this.creatorService.getByUuids(creatorsUuids);
+      const subscriptionLevels = user ? await this.subscriptionLevelService.getByCreators(postCreators) : null;
+      const subscriptions = user ? await this.subscriptionService.getListForUserAndCreators(user, postCreators) : null;
 
       for (const post of posts) {
         const postCreator = postCreators.find(item => item.uuid === post.creatorUuid);
@@ -130,6 +136,9 @@ export class PostProcessor {
             if (firstEl.type === MEDIA_TYPE.VIDEO) postVideos.push(item.filter(i => i.transformation === 'none').map(i => _.pick(i, ['width', 'height', 'file', creator && 'mediaUuid'])));
           }
         }
+
+        const subscription = subscriptions && subscriptions.find(item => item.creatorUuid === postCreator.uuid);
+        const levels = subscriptions && subscriptionLevels.filter(item => item.creatorUuid === postCreator.uuid);
 
         data.push({
           uuid: post.uuid,
@@ -151,14 +160,38 @@ export class PostProcessor {
             image: postImages,
             video: postVideos,
           },
-          subscription: skipSubscription ? null : {
-            // todo
+          subscription: !user ? null : {
+            isSubscribed: !!subscription,
+            isNotificationTurnedOn: subscription?.isNotificationed || false,
+            level: levels.find(item => item.uuid === subscription?.subscriptionLevelUuid)?.level,
+            prices: levels.map(item => _.pick(item, ['level', 'price'])),
           },
         });
       }
     }
 
     return data;
+  }
+
+  @Process('listForUser')
+  public async listForUser(job: Job): Promise<Record<string, any>[]> {
+    try {
+      const encodedToken = _.get(job, 'data.token', '');
+      const decodedToken = jwtDecode<any>(encodedToken);
+      if (!decodedToken?.sub) return;
+      const user = await this.userService.getByUuid(decodedToken.sub);
+
+      const creatorLogin = _.get(job, 'data.creator');
+      if (!creatorLogin) return;
+
+      const creator = await this.creatorService.getByLogin(creatorLogin);
+      if (!creator) return;
+
+      const posts = await this.postService.listByCreator(creator);
+      return this.getPostObjects(posts, creator, user);
+    } catch (e: unknown) {
+      console.log(e);
+    }
   }
 
   @Process('listForCreator')
@@ -171,8 +204,8 @@ export class PostProcessor {
       const creator = await this.creatorService.getByUuid(decodedToken.creator);
       if (!creator) return;
 
-      const posts = await this.postService.listForCreator(creator);
-      return this.getPostObjects(posts, creator, true);
+      const posts = await this.postService.listByCreator(creator);
+      return this.getPostObjects(posts, creator);
     } catch (e: unknown) {
       console.log(e);
     }
@@ -193,10 +226,10 @@ export class PostProcessor {
       const creator = await this.creatorService.getByUuid(decodedToken.creator);
       if (!creator) return;
 
-      const post = await this.postService.getForCreator(creator, inputUuid);
+      const post = await this.postService.getByCreator(creator, inputUuid);
       if (!post) return;
 
-      const arr = await this.getPostObjects([post], creator, true);
+      const arr = await this.getPostObjects([post], creator);
       return arr[0];
     } catch (e: unknown) {
       console.log(e);
@@ -253,7 +286,7 @@ export class PostProcessor {
     const creator = await this.creatorService.getByUuid(decodedToken.creator);
     if (!creator) return;
 
-    const post = await this.postService.getForCreator(creator, inputUuid);
+    const post = await this.postService.getByCreator(creator, inputUuid);
     if (!post) return;
 
     let media: MediaDbModel[];

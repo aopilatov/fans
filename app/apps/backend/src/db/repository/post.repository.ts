@@ -16,14 +16,14 @@ export class PostDbRepository {
       .createQueryBuilder('post');
   }
 
-  public async getListForCreator(creator: CreatorDbModel): Promise<PostDbModel[]> {
+  public async getListByCreator(creator: CreatorDbModel): Promise<PostDbModel[]> {
     return this.getBaseQuery()
       .andWhere('post.creatorUuid = :creatorUuid', { creatorUuid: creator.uuid })
       .addOrderBy('post.createdAt', 'DESC')
       .getMany();
   }
 
-  public async getOneForCreator(creator: CreatorDbModel, uuid: string): Promise<PostDbModel> {
+  public async getOneByCreator(creator: CreatorDbModel, uuid: string): Promise<PostDbModel> {
     return this.getBaseQuery()
       .andWhere('post.creatorUuid = :creatorUuid', { creatorUuid: creator.uuid })
       .andWhere('post.uuid = :uuid', { uuid })

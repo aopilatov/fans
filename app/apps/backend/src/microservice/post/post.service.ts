@@ -9,12 +9,12 @@ export class PostService {
     private readonly postDbRepository: PostDbRepository,
   ) {}
 
-  public async listForCreator(creator: CreatorDbModel): Promise<PostDbModel[]> {
-    return this.postDbRepository.getListForCreator(creator);
+  public async listByCreator(creator: CreatorDbModel): Promise<PostDbModel[]> {
+    return this.postDbRepository.getListByCreator(creator);
   }
 
-  public async getForCreator(creator: CreatorDbModel, uuid: string): Promise<PostDbModel> {
-    return this.postDbRepository.getOneForCreator(creator, uuid);
+  public async getByCreator(creator: CreatorDbModel, uuid: string): Promise<PostDbModel> {
+    return this.postDbRepository.getOneByCreator(creator, uuid);
   }
 
   public async create(creator: CreatorDbModel, level: number, text?: string, media?: MediaDbModel[]): Promise<PostDbModel> {

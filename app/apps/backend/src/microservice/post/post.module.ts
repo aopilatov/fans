@@ -14,6 +14,8 @@ import { TelegramModule } from '@/microservice/telegram';
 import { UserModule } from '@/microservice/user';
 import { CreatorModule } from '@/microservice/creator';
 import { MediaModule } from '@/microservice/media';
+import { SubscriptionModule } from '@/microservice/subscription';
+import { SubscriptionLevelModule } from '@/microservice/subscriptionLevel';
 
 import { PostInputCreate } from './post.input.create';
 
@@ -35,6 +37,8 @@ import { PostInputCreate } from './post.input.create';
     UserModule,
     MediaModule,
     forwardRef(() => CreatorModule),
+    forwardRef(() => SubscriptionModule),
+    forwardRef(() => SubscriptionLevelModule),
   ],
 
   providers: [

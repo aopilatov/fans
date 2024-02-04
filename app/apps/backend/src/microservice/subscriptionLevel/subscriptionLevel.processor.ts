@@ -71,7 +71,7 @@ export class SubscriptionLevelProcessor {
       if (!user) return;
 
       const creator = await this.creatorService.getCreator(user, _.get(job.data, 'system.cmd.context.creator'));
-      const levels = await this.subscriptionLevelService.getForCreator(creator);
+      const levels = await this.subscriptionLevelService.getByCreator(creator);
       levels.sort((a,b) => a.price - b.price);
 
       const data = [];

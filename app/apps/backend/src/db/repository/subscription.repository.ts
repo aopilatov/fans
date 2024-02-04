@@ -29,6 +29,13 @@ export class SubscriptionDbRepository {
       .getMany();
   }
 
+  public async getListForUserAndCreators(user: UserDbModel, creators: CreatorDbModel[]): Promise<SubscriptionDbModel[]> {
+    return this.getBaseQuery()
+      .andWhere('subscription.userUuid = :userUuid', { userUuid: user.uuid })
+      .andWhere('subscription.creatorUuid IN (:...creatorUuids)', { creatorUuids: creators.map(item => item.uuid) })
+      .getMany();
+  }
+
   public async getCountForUser(user: UserDbModel): Promise<number> {
     return this.getBaseQuery()
       .andWhere('subscription.userUuid = :userUuid', { userUuid: user.uuid })
