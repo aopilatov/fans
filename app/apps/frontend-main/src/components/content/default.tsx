@@ -13,9 +13,10 @@ import ContentVideo from '@/components/content/video.tsx';
 interface Props {
   data: Post;
   showLinkToCreator?: boolean;
+  subscribeCallback?: Function;
 }
 
-const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true }: Props) => {
+const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true, subscribeCallback }: Props) => {
   const isButtonsInactive = !data.subscription.isSubscribed || data.level > data.subscription.level;
   const sendTipRef = useRef<HTMLDialogElement>(null);
 
@@ -27,7 +28,7 @@ const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true }: Props) =>
     {data.content?.text && <div className="px-4 pt-4 text-sm font-medium text-slate-100">{data.content.text}</div>}
 
     { data.type !== PostType.TEXT && <div className="pt-4">
-      <ContentDefaultRender data={ data } />
+      <ContentDefaultRender data={ data } subscribeCallback={ subscribeCallback } />
     </div> }
 
     <div className="p-4 flex gap-4">
@@ -88,11 +89,12 @@ export default ContentDefault;
 
 interface PropsRender {
   data: Post;
+  subscribeCallback?: Function;
 }
 
-const ContentDefaultRender: FC<PropsRender> = ({ data }: PropsRender) => {
+const ContentDefaultRender: FC<PropsRender> = ({ data, subscribeCallback }: PropsRender) => {
   if (!data.subscription.isSubscribed) {
-    return <ContentUnavailableSubscribe data={data}/>;
+    return <ContentUnavailableSubscribe data={data} subscribeCallback={subscribeCallback} />;
   }
 
   if (data.level > data.subscription.level) {

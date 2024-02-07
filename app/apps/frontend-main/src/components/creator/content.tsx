@@ -11,13 +11,16 @@ type Tabs = 'posts' | 'photo' | 'video';
 interface Props {
   creator: Record<string, any>;
   posts: Post[];
-  photos: Post[];
+  photos: Record<string, any>[];
   videos: Post[];
   showLinkToCreator?: boolean;
+  subscribeCallback?: Function;
 }
 
-const CreatorContent: FC<Props> = ({ creator, posts, photos, videos, showLinkToCreator = true }: Props) => {
+const CreatorContent: FC<Props> = ({ creator, posts, photos, videos, showLinkToCreator = true, subscribeCallback }: Props) => {
   const prefix = _.get(window, 'prefix.value', '');
+  const cdn = _.get(window, 'cdn.value', '');
+
   const location = useLocation();
 
   const [activeTab, setActiveTab] = useState<Tabs>('posts');
@@ -65,7 +68,7 @@ const CreatorContent: FC<Props> = ({ creator, posts, photos, videos, showLinkToC
       {activeTab === 'posts' && <div>
         <div className="flex flex-col gap-4">
           {(posts || []).map(item => <div key={item.uuid}>
-            <ContentDefault data={item} showLinkToCreator={ showLinkToCreator } />
+            <ContentDefault data={item} showLinkToCreator={ showLinkToCreator } subscribeCallback={ subscribeCallback } />
           </div>)}
         </div>
 
@@ -74,16 +77,19 @@ const CreatorContent: FC<Props> = ({ creator, posts, photos, videos, showLinkToC
 
       {activeTab === 'photo' && <div>
         <div className="grid grid-cols-3 gap-0.5">
-          {(photos || []).map(item => <Link
-            to={`${prefix}/creator/${creator.login}/${item.uuid}`}
-            key={item.uuid}
-          >
-            <img
-              src={ item.content.image[0] }
-              className="w-full"
-              alt="photo"
-            />
-          </Link>)}
+          {(photos || []).map(item => {
+            const item200 = item.find(i => i.width === 200);
+            return <Link
+              to={`${prefix}/creator/${creator.login}/${item200.postUuid}`}
+              key={item200.file}
+            >
+              <img
+                src={ `${cdn}/${item200.file}` }
+                className="w-full"
+                alt="photo"
+              />
+            </Link>;
+          })}
         </div>
 
         <div className="flex justify-center mt-4 text-sm text-zinc-500">That's all for photos</div>

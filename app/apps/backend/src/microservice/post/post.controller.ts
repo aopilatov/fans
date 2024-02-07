@@ -38,6 +38,56 @@ export class PostController {
     }
   }
 
+  @UseGuards(UserGuard)
+  @Get(':creator/photos')
+  public async listPhotosForUser(
+    @Headers() headers: Record<string, any>,
+    @Param('creator') creator: string,
+    @Res() res: FastifyReply
+  ): Promise<any> {
+    try {
+      const token = _.get(headers, 'x-authorization');
+      const job = await this.postQueue.add('listPhotosForUser', { token, creator });
+      const result = await job.finished();
+      if (!result) {
+        throw new Error('Can not fetch posts');
+      }
+
+      return res.code(200)
+        .header('Content-Type', 'application/json')
+        .send(result);
+    } catch (e: unknown) {
+      return res.code(_.get(e, 'code', 500))
+        .header('Content-Type', 'application/json')
+        .send({ message: _.get(e, 'message', 'Internal server error') });
+    }
+  }
+
+  @UseGuards(UserGuard)
+  @Get(':creator/videos')
+  public async listVideosForUser(
+    @Headers() headers: Record<string, any>,
+    @Param('creator') creator: string,
+    @Res() res: FastifyReply
+  ): Promise<any> {
+    try {
+      const token = _.get(headers, 'x-authorization');
+      const job = await this.postQueue.add('listVideosForUser', { token, creator });
+      const result = await job.finished();
+      if (!result) {
+        throw new Error('Can not fetch posts');
+      }
+
+      return res.code(200)
+        .header('Content-Type', 'application/json')
+        .send(result);
+    } catch (e: unknown) {
+      return res.code(_.get(e, 'code', 500))
+        .header('Content-Type', 'application/json')
+        .send({ message: _.get(e, 'message', 'Internal server error') });
+    }
+  }
+
   @UseGuards(CreatorGuard)
   @Get('/full')
   public async listForCreator(

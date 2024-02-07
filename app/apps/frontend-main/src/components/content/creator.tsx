@@ -30,10 +30,12 @@ interface PropsData {
 }
 
 const ContentCreatorData: FC<PropsData> = ({ creator }: PropsData) => {
+  const cdn = _.get(window, 'cdn.value', '');
+
   return <>{ creator && <div className="flex items-center gap-4">
     <div className="avatar">
       <div className="rounded-full w-12">
-        <img src={ creator.image } />
+        <img src={ creator?.image?.length > 0 ? `${cdn}${creator.image.find(item => item.width === 100)}` : '/creator-noimg.png' } />
       </div>
     </div>
     <div>

@@ -11,8 +11,8 @@ const config = {
   },
 
   url: {
-    frontend: process.env.URL_FRONTEND || 'https://47d2-62-65-222-193.ngrok-free.app',
-    backend: process.env.URL_BACKEND || 'https://47d2-62-65-222-193.ngrok-free.app/api',
+    frontend: process.env.URL_FRONTEND || 'https://9ac6-62-65-222-193.ngrok-free.app',
+    backend: process.env.URL_BACKEND || 'https://9ac6-62-65-222-193.ngrok-free.app/api',
   },
 
   db: {

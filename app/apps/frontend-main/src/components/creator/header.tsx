@@ -9,56 +9,39 @@ import _ from 'lodash';
 interface Props {
   creator: Creator;
   subscription: Subscription;
+  setSubscription: Function;
+  isLoading: boolean;
+  setIsLoading: Function;
+  subscribeCallback: Function;
 }
 
-const CreatorHeader: FC<Props> = ({ creator, subscription }: Props) => {
+const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, setIsLoading, subscribeCallback, setSubscription }: Props) => {
   const cdn = _.get(window, 'cdn.value', '');
   const prefix = _.get(window, 'prefix.value', '');
 
   const [infoLongIsShowed, setInfoLongIsShowed] = useState<boolean>(false);
-  const [isLoadingSub, setIsLoadingSub] = useState<boolean>(false);
-  const [infoSub, setInfoSub] = useState<Subscription>(subscription);
 
   useEffect(() => {
     if (subscription) {
-      setInfoSub(() => subscription);
+      setSubscription(() => subscription);
     }
   }, [subscription]);
 
-  const changeSubscription = (level?: number) => {
-    setIsLoadingSub(() => true);
-    api.subscription.change(creator.login, level)
-      .then((data: any) => {
-        if (data?.success) {
-          const sub = _.clone(infoSub);
-          if (!data?.subscription) {
-            _.unset(sub, 'level');
-            _.set(sub, 'isSubscribed', false);
-          } else  {
-            _.set(sub, 'isSubscribed', true);
-            _.set(sub, 'level', data?.level || 1);
-          }
-          setInfoSub(() => sub);
-        }
-      })
-      .finally(() => setIsLoadingSub(() => false));
-  };
-
   const changeNotification = () => {
-    setIsLoadingSub(() => true);
+    setIsLoading(() => true);
     api.subscription.notification(creator.login)
       .then((data: any) => {
         if (data?.success) {
-          const sub = _.clone(infoSub);
+          const sub = _.clone(subscription);
           _.set(sub, 'isNotificationTurnedOn', data?.isNotificationTurnedOn || false);
-          setInfoSub(() => sub);
+          setSubscription(() => sub);
         }
       })
-      .finally(() => setIsLoadingSub(() => false));
+      .finally(() => setIsLoading(() => false));
   };
 
   return <>
-    { creator && infoSub && <div className="w-full flex flex-col">
+    { creator && subscription && <div className="w-full flex flex-col">
       <div className="w-full">
         <img
           src={ creator?.artwork?.length > 0 ? `${cdn}${creator.artwork.find(item => item.width === 200)}` : '/artwork-noimg.png' }
@@ -76,21 +59,21 @@ const CreatorHeader: FC<Props> = ({ creator, subscription }: Props) => {
             alt="ava"
           />
 
-          {!infoSub?.isSubscribed &&
+          {!subscription?.isSubscribed &&
             <button
               className="btn bg-gradient-to-r from-purple-500 to-pink-500 text-gray-100 font-normal"
-              onClick={ () => changeSubscription(1) }
-            >{!isLoadingSub ? 'Subscribe for free' : <span className="loading loading-spinner"></span>}</button>
+              onClick={ () => subscribeCallback(1) }
+            >{!isLoading ? 'Subscribe for free' : <span className="loading loading-spinner"></span>}</button>
           }
 
-          {infoSub?.isSubscribed &&
+          {subscription?.isSubscribed &&
             <div className="flex gap-4">
               <button
                 className="btn btn-outline btn-error"
-                onClick={ () => changeSubscription() }
+                onClick={ () => subscribeCallback() }
               >
                 {
-                  !isLoadingSub
+                  !isLoading
                     ? <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <use xlinkHref={SVG + `#gg-user-remove`}/>
                       </svg>
@@ -101,10 +84,10 @@ const CreatorHeader: FC<Props> = ({ creator, subscription }: Props) => {
                 onClick={ () => changeNotification() }
                 className={classnames({
                   btn: true,
-                  'btn-outline': !infoSub?.isNotificationTurnedOn,
+                  'btn-outline': !subscription?.isNotificationTurnedOn,
                   'btn-accent': true,
                 })}
-              >{!isLoadingSub
+              >{!isLoading
                 ? <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24"
                        stroke="currentColor">
                   <use xlinkHref={SVG + `#gg-bell`}/>
@@ -142,7 +125,7 @@ const CreatorHeader: FC<Props> = ({ creator, subscription }: Props) => {
         </div>
       </div>
 
-      { infoSub.isSubscribed && creator.maxLevel > 1 && infoSub.level < creator.maxLevel && <div className="p-2">
+      { subscription.isSubscribed && creator.maxLevel > 1 && subscription.level < creator.maxLevel && <div className="p-2">
         <Link
           to={ `${prefix}/subscriptions/${creator.login}` }
           role="button"

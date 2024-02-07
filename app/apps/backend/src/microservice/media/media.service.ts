@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MediaDbRepository } from '@/db/repository';
 import { DateTime } from 'luxon';
-import { MEDIA_TYPE, MEDIA_TRANSFORMATION, MediaDbModel } from '@/db/model';
+import { MEDIA_TYPE, MEDIA_TRANSFORMATION, MediaDbModel, CreatorDbModel } from '@/db/model';
 import * as _ from 'lodash';
 import { ffprobe } from 'fluent-ffmpeg';
 import axios from 'axios';
@@ -175,5 +175,9 @@ export class MediaService {
 
   public async getByMediaUuids(mediaUuids: string[]): Promise<MediaDbModel[]> {
     return this.mediaDbRepository.findByMediaUuids(mediaUuids);
+  }
+
+  public async getByCreator(creator: CreatorDbModel, type: MEDIA_TYPE): Promise<Record<string, any>[]> {
+    return this.mediaDbRepository.findByCreator(creator, type);
   }
 }
