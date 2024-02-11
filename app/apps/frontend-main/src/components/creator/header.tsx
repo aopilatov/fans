@@ -44,7 +44,7 @@ const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, setIsLoadi
     { creator && subscription && <div className="w-full flex flex-col">
       <div className="w-full">
         <img
-          src={ creator?.artwork?.length > 0 ? `${cdn}${creator.artwork.find(item => item.width === 200)}` : '/artwork-noimg.png' }
+          src={ creator?.artwork ? `${cdn}${creator.artwork.origin}` : '/artwork-noimg.png' }
           className="w-full"
           alt="alt"
         />
@@ -54,7 +54,7 @@ const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, setIsLoadi
           style={{ marginTop: '-40px' }}
         >
           <img
-            src={ creator?.image?.length > 0 ? `${cdn}${creator.image.find(item => item.width === 100)}` : '/creator-noimg.png' }
+            src={ creator?.image ? `${cdn}${creator.image.none200}` : '/creator-noimg.png' }
             className="border-4 rounded-full w-24"
             alt="ava"
           />

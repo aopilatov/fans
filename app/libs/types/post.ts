@@ -1,5 +1,6 @@
 import { Creator } from './creator';
 import { Subscription, SubscriptionLevel } from './subscription';
+import { Media } from './media';
 
 export interface Post {
   uuid: string;
@@ -13,8 +14,8 @@ export interface Post {
 }
 
 export interface PostContent {
-  image?: string[];
-  video?: string[];
+  image?: Media[];
+  video?: Media[];
   text?: string;
 }
 

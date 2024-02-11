@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from 'react';
-import { Creator, Post, PostType, Subscription } from '@fans/types';
+import { Creator, Post, Subscription } from '@fans/types';
 import { useParams } from 'react-router-dom';
 import { store } from '@/stores';
 import api from '@/api';
@@ -17,7 +17,7 @@ const PageCreatorProfile: FC = () => {
   const [subscription, setSubscription] = useState<Subscription>(null);
   const [creatorPosts, setCreatorPosts] = useState<Post[]>([]);
   const [creatorPhotos, setCreatorPhotos] = useState<Record<string, any>[]>([]);
-  const [creatorVideos, setCreatorVideos] = useState<Post[]>([]);
+  const [creatorVideos, setCreatorVideos] = useState<Record<string, any>[]>([]);
 
   useEffect(() => {
     store.dispatch({ type: 'app/setMenuBack', payload: true });
@@ -29,119 +29,8 @@ const PageCreatorProfile: FC = () => {
 
   const getData = () => {
     setIsLoading(() => true);
-    Promise.all([getCreator, getSubscription, getPosts, getPhotos].map(item => item()))
+    Promise.all([getCreator, getSubscription, getPosts, getPhotos, getVideos].map(item => item()))
       .finally(() => setIsLoading(() => false));
-
-    setCreatorVideos(() => ([
-      {
-        uuid: '1',
-        date: '2023-12-30T12:20:21.000Z',
-        isLiked: false,
-        type: PostType.IMAGE,
-        level: 1,
-        subscription: {
-          isSubscribed: false,
-          isNotificationTurnedOn: false,
-          level: 1,
-          prices: [{
-            level: 1,
-            price: 0,
-          }],
-        },
-        creator: {
-          login: 'sax',
-          name: 'Alex Opilatov',
-          isVerified: true,
-          image: 'https://placehold.co/180x180',
-          infoShort: '',
-          maxLevel: 1,
-        },
-        content: {
-          image: ['https://placehold.co/1000x1000'],
-        },
-      },
-      {
-        uuid: '2',
-        date: '2023-12-30T12:20:21.000Z',
-        isLiked: false,
-        type: PostType.IMAGE,
-        level: 1,
-        subscription: {
-          isSubscribed: false,
-          isNotificationTurnedOn: false,
-          level: 1,
-          prices: [{
-            level: 1,
-            price: 0,
-          }],
-        },
-        creator: {
-          login: 'sax',
-          name: 'Alex Opilatov',
-          isVerified: true,
-          image: 'https://placehold.co/180x180',
-          infoShort: '',
-          maxLevel: 1,
-        },
-        content: {
-          image: ['https://placehold.co/1000x1000'],
-        },
-      },
-      {
-        uuid: '3',
-        date: '2023-12-30T12:20:21.000Z',
-        isLiked: false,
-        type: PostType.IMAGE,
-        level: 1,
-        subscription: {
-          isSubscribed: false,
-          isNotificationTurnedOn: false,
-          level: 1,
-          prices: [{
-            level: 1,
-            price: 0,
-          }],
-        },
-        creator: {
-          login: 'sax',
-          name: 'Alex Opilatov',
-          isVerified: true,
-          image: 'https://placehold.co/180x180',
-          infoShort: '',
-          maxLevel: 1,
-        },
-        content: {
-          image: ['https://placehold.co/1000x1000'],
-        },
-      },
-      {
-        uuid: '4',
-        date: '2023-12-30T12:20:21.000Z',
-        isLiked: false,
-        type: PostType.IMAGE,
-        level: 1,
-        subscription: {
-          isSubscribed: false,
-          isNotificationTurnedOn: false,
-          level: 1,
-          prices: [{
-            level: 1,
-            price: 0,
-          }],
-        },
-        creator: {
-          login: 'sax',
-          name: 'Alex Opilatov',
-          isVerified: true,
-          image: 'https://placehold.co/180x180',
-          infoShort: '',
-          maxLevel: 1,
-        },
-        content: {
-          image: ['https://placehold.co/1000x1000'],
-        },
-      },
-    ]));
   };
 
   const getCreator = () => {
@@ -162,6 +51,11 @@ const PageCreatorProfile: FC = () => {
   const getPhotos = () => {
     api.post.listPhotos(login)
       .then((data: any) => setCreatorPhotos(() => data));
+  };
+
+  const getVideos = () => {
+    api.post.listVideos(login)
+      .then((data: any) => setCreatorVideos(() => data));
   };
 
   const changeSubscription = (level?: number) => {

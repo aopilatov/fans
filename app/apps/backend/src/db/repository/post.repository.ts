@@ -33,7 +33,7 @@ export class PostDbRepository {
   public async create(creator: CreatorDbModel, type: POST_TYPE, level: number, text?: string, media?: MediaDbModel[]): Promise<PostDbModel> {
     const post = this.repository.create({
       creatorUuid: creator.uuid,
-      mediaUuids: _.uniq((media || []).map(item => item.mediaUuid)),
+      mediaUuids: _.uniq((media || []).map(item => item.uuid)),
       type,
       level,
       text,

@@ -11,8 +11,8 @@ type Tabs = 'posts' | 'photo' | 'video';
 interface Props {
   creator: Record<string, any>;
   posts: Post[];
-  photos: Record<string, any>[];
-  videos: Post[];
+  photos: Record<string, any>;
+  videos: Record<string, any>;
   showLinkToCreator?: boolean;
   subscribeCallback?: Function;
 }
@@ -68,7 +68,7 @@ const CreatorContent: FC<Props> = ({ creator, posts, photos, videos, showLinkToC
       {activeTab === 'posts' && <div>
         <div className="flex flex-col gap-4">
           {(posts || []).map(item => <div key={item.uuid}>
-            <ContentDefault data={item} showLinkToCreator={ showLinkToCreator } subscribeCallback={ subscribeCallback } />
+            <ContentDefault data={item} showLinkToCreator={ showLinkToCreator } subscribeCallback={ subscribeCallback } zoomable={ true } />
           </div>)}
         </div>
 
@@ -78,13 +78,12 @@ const CreatorContent: FC<Props> = ({ creator, posts, photos, videos, showLinkToC
       {activeTab === 'photo' && <div>
         <div className="grid grid-cols-3 gap-0.5">
           {(photos || []).map(item => {
-            const item200 = item.find(i => i.width === 200);
             return <Link
-              to={`${prefix}/creator/${creator.login}/${item200.postUuid}`}
-              key={item200.file}
+              to={`${prefix}/creator/${creator.login}/${item.postUuid}`}
+              key={item.uuid}
             >
               <img
-                src={ `${cdn}/${item200.file}` }
+                src={ `${cdn}/${item?.none200 || item.blur200}` }
                 className="w-full"
                 alt="photo"
               />
@@ -97,16 +96,18 @@ const CreatorContent: FC<Props> = ({ creator, posts, photos, videos, showLinkToC
 
       {activeTab === 'video' && <div>
         <div className="grid grid-cols-3 gap-0.5">
-          {(videos || []).map(item => <Link
-            to={`${prefix}/creator/${creator.login}/${item.uuid}`}
-            key={item.uuid}
-          >
-            <img
-              src={ item.content.image[0] }
-              className="w-full"
-              alt="videos"
-            />
-          </Link>)}
+          {(videos || []).map(item => {
+            return <Link
+              to={`${prefix}/creator/${creator.login}/${item.postUuid}`}
+              key={item.uuid}
+            >
+              <img
+                src={ `${cdn}/${item?.none200 || item.blur200}` }
+                className="w-full"
+                alt="videos"
+              />
+            </Link>;
+          })}
         </div>
 
         <div className="flex justify-center mt-4 text-sm text-zinc-500">That's all for videos</div>

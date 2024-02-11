@@ -16,12 +16,12 @@ const CreatorCard: FC<Props> = ({ creator }: Props) => {
       className="bshadow-xl rounded-lg bg-contain bg-center"
       style={{
         height: _.floor(window.innerWidth / 562 * 180),
-        backgroundImage: `url(${creator?.artwork?.length > 0 ? cdn + creator.artwork.find(item => item.width === 200).file : '/artwork-noimg.png'})`,
+        backgroundImage: `url(${creator?.artwork ? cdn + creator.artwork.origin : '/artwork-noimg.png'})`,
       }}
     >
       <div className="w-full h-full flex items-center">
         <img
-          src={ creator?.image?.length > 0 ? `${cdn}${creator.image.find(item => item.width === 100).file}` : '/creator-noimg.png' }
+          src={ creator?.image ? `${cdn}${creator.image.none200}` : '/creator-noimg.png' }
           className="bg-contain bg-center h-2/3 border-4 rounded-full mx-2"
           alt={ creator.login }
         />

@@ -2,7 +2,7 @@ import { forwardRef, Inject } from '@nestjs/common';
 import { OnQueueActive, OnQueueError, OnQueueStalled, Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 import { jwtDecode } from 'jwt-decode';
-import { CreatorDbModel, MEDIA_TRANSFORMATION, MEDIA_TYPE, MediaDbModel, PostDbModel, UserDbModel } from '@/db/model';
+import { CreatorDbModel, MEDIA_TYPE, MediaDbModel, PostDbModel, UserDbModel } from '@/db/model';
 import { TelegramService } from '@/microservice/telegram';
 import { UserService } from '@/microservice/user';
 import { CreatorService } from '@/microservice/creator';
@@ -114,7 +114,7 @@ export class PostProcessor {
       for (const post of posts) {
         mediaUuids.push(...(post.mediaUuids || []));
       }
-      const postMedia= mediaUuids ? await this.mediaService.getByMediaUuids(mediaUuids) : [];
+      const postMedia = mediaUuids ? await this.mediaService.getByUuids(mediaUuids) : [];
 
       const creatorsUuids: string[] = [];
       for (const post of posts) {
@@ -129,19 +129,8 @@ export class PostProcessor {
         const subscription = subscriptions && subscriptions.find(item => item.creatorUuid === postCreator.uuid);
         const levels = subscriptions && subscriptionLevels.filter(item => item.creatorUuid === postCreator.uuid);
 
-        const postMedias = post?.mediaUuids?.map(item => postMedia.filter(media => media.mediaUuid === item));
-        const postImages = [];
-        const postVideos = [];
-
-        if (subscription && levels.find(item => item.uuid === subscription.subscriptionLevelUuid).level >= post.level) {
-          for (const item of postMedias) {
-            const firstEl: MediaDbModel = _.get(item, '[0]');
-            if (firstEl) {
-              if (firstEl.type === MEDIA_TYPE.IMAGE) postImages.push(item.filter(i => i.transformation === 'none').map(i => _.pick(i, ['width', 'height', 'file', creator && 'mediaUuid'])));
-              if (firstEl.type === MEDIA_TYPE.VIDEO) postVideos.push(item.filter(i => i.transformation === 'none').map(i => _.pick(i, ['width', 'height', 'file', creator && 'mediaUuid'])));
-            }
-          }
-        }
+        const postMedias = postMedia.filter(item => post?.mediaUuids?.includes(item.uuid));
+        const enoughSubscription = subscription && levels.find(item => item.uuid === subscription.subscriptionLevelUuid).level >= post.level;
 
         data.push({
           uuid: post.uuid,
@@ -152,16 +141,16 @@ export class PostProcessor {
             login: postCreator.login,
             name: postCreator.name,
             isVerified: postCreator.isVerified,
-            image: postCreator?.image && postMedia.find(item => item.mediaUuid === postCreator.image),
-            artwork: postCreator?.artwork && postMedia.find(item => item.mediaUuid === postCreator.artwork),
+            image: postMedia.find(item => item.uuid === postCreator.image),
+            artwork: postMedia.find(item => item.uuid === postCreator.artwork),
             infoShort: postCreator.infoShort,
             infoLong: postCreator.infoLong,
             maxLevel: postCreator.maxLevel,
           },
           content: {
             text: post?.text,
-            image: postImages,
-            video: postVideos,
+            image: postMedias.filter(item => item.type === MEDIA_TYPE.IMAGE).map(item => creator || enoughSubscription ? item : _.omit(item, ['origin', 'none200'])),
+            video: postMedias.filter(item => item.type === MEDIA_TYPE.VIDEO).map(item => creator || enoughSubscription ? item : _.omit(item, ['origin', 'none200'])),
           },
           subscription: !user ? null : {
             isSubscribed: !!subscription,
@@ -182,7 +171,9 @@ export class PostProcessor {
       const encodedToken = _.get(job, 'data.token', '');
       const decodedToken = jwtDecode<any>(encodedToken);
       if (!decodedToken?.sub) return;
+
       const user = await this.userService.getByUuid(decodedToken.sub);
+      if (!user) return;
 
       const creatorLogin = _.get(job, 'data.creator');
       if (!creatorLogin) return;
@@ -197,13 +188,40 @@ export class PostProcessor {
     }
   }
 
-  @Process('listPhotosForUser')
-  public async listPhotosForUser(job: Job): Promise<Record<string, any>[]> {
+  @Process('getOneForUser')
+  public async getOneForUser(job: Job): Promise<Record<string, any>> {
     try {
       const encodedToken = _.get(job, 'data.token', '');
       const decodedToken = jwtDecode<any>(encodedToken);
       if (!decodedToken?.sub) return;
       const user = await this.userService.getByUuid(decodedToken.sub);
+      if (!user) return;
+
+      const creatorLogin = _.get(job, 'data.creator');
+      if (!creatorLogin) return;
+
+      const creator = await this.creatorService.getByLogin(creatorLogin);
+      if (!creator) return;
+
+      const post = await this.postService.getByCreator(creator, _.get(job, 'data.uuid'));
+      if (!post) return;
+
+      const arr = await this.getPostObjects([post], undefined, user);
+      return arr[0];
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }
+
+  @Process('listPhotosForUser')
+  public async listPhotosForUser(job: Job): Promise<Record<string, any>> {
+    try {
+      const encodedToken = _.get(job, 'data.token', '');
+      const decodedToken = jwtDecode<any>(encodedToken);
+      if (!decodedToken?.sub) return;
+
+      const user = await this.userService.getByUuid(decodedToken.sub);
+      if (!user) return;
 
       const creatorLogin = _.get(job, 'data.creator');
       if (!creatorLogin) return;
@@ -213,44 +231,39 @@ export class PostProcessor {
 
       const subscription = await this.subscriptionService.getOne(user, creator);
       const subscriptionLevels = await this.subscriptionLevelService.getByCreator(creator);
-      const subscriptionLevel = subscriptionLevels.find(item => item.uuid === subscription.subscriptionLevelUuid);
+      const subscriptionLevel = subscription ? subscriptionLevels.find(item => item.uuid === subscription?.subscriptionLevelUuid) : null;
 
-      const media = await this.mediaService.getByCreator(creator, MEDIA_TYPE.IMAGE);
-      const mediaDistinct: Record<string, any> = {};
-      const mediaFiltered = media.filter(item => {
-        if (subscriptionLevel.level >= item['post_level']) {
-          return item['transformation'] === MEDIA_TRANSFORMATION.NONE;
-        } else {
-          return item['transformation'] === MEDIA_TRANSFORMATION.BLUR;
-        }
-      })
+      const mediaRaw = await this.mediaService.getByCreator(creator, MEDIA_TYPE.IMAGE);
+      const media = mediaRaw
+        .map(item => {
+          if (subscriptionLevel?.level >= item['post_level']) {
+            return item;
+          }
 
-      for (const item of mediaFiltered) {
-        if (!_.has(mediaDistinct, item['media_uuid'])) {
-          _.set(mediaDistinct, item['media_uuid'], []);
-        }
+          return _.omit(item, ['origin', 'none_200'])
+        })
+        .map(this.mediaService.convertObjectToModel);
 
-        mediaDistinct[item['media_uuid']].push({
-          postUuid: item['post_uuid'],
-          file: item['file'],
-          width: item['width'],
-          height: item['height'],
-        });
+      for (const index in media) {
+        const objRaw = mediaRaw.find(itemRaw => itemRaw.uuid === media[index].uuid);
+        media[index]['postUuid'] = objRaw['post_uuid'];
       }
 
-      return Object.values(mediaDistinct);
+      return media;
     } catch (e: unknown) {
       console.log(e);
     }
   }
 
   @Process('listVideosForUser')
-  public async listVideosForUser(job: Job): Promise<Record<string, any>[]> {
+  public async listVideosForUser(job: Job): Promise<Record<string, any>> {
     try {
       const encodedToken = _.get(job, 'data.token', '');
       const decodedToken = jwtDecode<any>(encodedToken);
       if (!decodedToken?.sub) return;
+
       const user = await this.userService.getByUuid(decodedToken.sub);
+      if (!user) return;
 
       const creatorLogin = _.get(job, 'data.creator');
       if (!creatorLogin) return;
@@ -260,26 +273,25 @@ export class PostProcessor {
 
       const subscription = await this.subscriptionService.getOne(user, creator);
       const subscriptionLevels = await this.subscriptionLevelService.getByCreator(creator);
-      const subscriptionLevel = subscriptionLevels.find(item => item.uuid === subscription.subscriptionLevelUuid);
+      const subscriptionLevel = subscription ? subscriptionLevels.find(item => item.uuid === subscription?.subscriptionLevelUuid) : null;
 
-      const media = await this.mediaService.getByCreator(creator, MEDIA_TYPE.VIDEO);
-      const mediaDistinct: Record<string, any> = {};
-      const mediaFiltered = media.filter(item => subscriptionLevel.level >= item['post_level']);
+      const mediaRaw = await this.mediaService.getByCreator(creator, MEDIA_TYPE.VIDEO);
+      const media = mediaRaw
+        .map(item => {
+          if (subscriptionLevel?.level >= item['post_level']) {
+            return item;
+          }
 
-      for (const item of mediaFiltered) {
-        if (!_.has(mediaDistinct, item['media_uuid'])) {
-          _.set(mediaDistinct, item['media_uuid'], []);
-        }
+          return _.omit(item, ['origin', 'none_200'])
+        })
+        .map(this.mediaService.convertObjectToModel);
 
-        mediaDistinct[item['media_uuid']].push({
-          postUuid: item['post_uuid'],
-          file: item['file'],
-          width: item['width'],
-          height: item['height'],
-        });
+      for (const index in media) {
+        const objRaw = mediaRaw.find(itemRaw => itemRaw.uuid === media[index].uuid);
+        media[index]['postUuid'] = objRaw['post_uuid'];
       }
 
-      return Object.values(mediaDistinct);
+      return media;
     } catch (e: unknown) {
       console.log(e);
     }
@@ -349,7 +361,7 @@ export class PostProcessor {
       let media: MediaDbModel[];
       if (inputImages?.length || inputVideos?.length) {
         const mediaUuids = [ ...(inputImages), ...(inputVideos) ];
-        media = await this.mediaService.getByMediaUuids(mediaUuids);
+        media = await this.mediaService.getByUuids(mediaUuids);
       }
 
       return this.postService.create(creator, inputLevel, inputText, media);
@@ -383,7 +395,7 @@ export class PostProcessor {
     let media: MediaDbModel[];
     if (inputImages?.length || inputVideos?.length) {
       const mediaUuids = [ ...(inputImages), ...(inputVideos) ];
-      media = await this.mediaService.getByMediaUuids(mediaUuids);
+      media = await this.mediaService.getByUuids(mediaUuids);
     }
 
     return this.postService.edit(post, inputLevel, inputText, media);

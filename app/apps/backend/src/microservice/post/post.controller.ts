@@ -88,6 +88,32 @@ export class PostController {
     }
   }
 
+  @UseGuards(UserGuard)
+  @Get(':creator/:uuid')
+  public async getOneForUser(
+    @Headers() headers: Record<string, any>,
+    @Param('creator') creator: string,
+    @Param('uuid') uuid: string,
+    @Res() res: FastifyReply
+  ): Promise<any> {
+    try {
+      const token = _.get(headers, 'x-authorization');
+      const job = await this.postQueue.add('getOneForUser', { token, creator, uuid });
+      const result = await job.finished();
+      if (!result) {
+        throw new Error('Can not fetch posts');
+      }
+
+      return res.code(200)
+        .header('Content-Type', 'application/json')
+        .send(result);
+    } catch (e: unknown) {
+      return res.code(_.get(e, 'code', 500))
+        .header('Content-Type', 'application/json')
+        .send({ message: _.get(e, 'message', 'Internal server error') });
+    }
+  }
+
   @UseGuards(CreatorGuard)
   @Get('/full')
   public async listForCreator(

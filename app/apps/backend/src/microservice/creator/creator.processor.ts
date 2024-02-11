@@ -368,21 +368,13 @@ export class CreatorProcessor {
       maxLevel: creator.maxLevel,
     };
 
-    let images: MediaDbModel[] = [];
-    if (creator?.image) {
-      images = await this.mediaService.getByMediaUuid(creator.image);
-      images = images.filter(item => item.transformation === 'none');
-      images.sort((a, b) => a.width - b.width);
-    }
-    _.set(data, 'image', images.map(item => _.pick(item, ['file', 'width', 'height'])));
+    let image: MediaDbModel = null;
+    if (creator?.image) image = await this.mediaService.getByUuid(creator.image);
+    _.set(data, 'image', image);
 
-    let artworks: MediaDbModel[] = [];
-    if (creator?.artwork) {
-      artworks = await this.mediaService.getByMediaUuid(creator.artwork);
-      artworks = artworks.filter(item => item.transformation === 'none');
-      artworks.sort((a, b) => a.width - b.width);
-    }
-    _.set(data, 'artwork', artworks.map(item => _.pick(item, ['file', 'width', 'height'])));
+    let artwork: MediaDbModel = null;
+    if (creator?.artwork) artwork = await this.mediaService.getByUuid(creator.artwork);
+    _.set(data, 'artwork', artwork);
 
     return data;
   }

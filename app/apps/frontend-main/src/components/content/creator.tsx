@@ -35,7 +35,7 @@ const ContentCreatorData: FC<PropsData> = ({ creator }: PropsData) => {
   return <>{ creator && <div className="flex items-center gap-4">
     <div className="avatar">
       <div className="rounded-full w-12">
-        <img src={ creator?.image?.length > 0 ? `${cdn}${creator.image.find(item => item.width === 100)}` : '/creator-noimg.png' } />
+        <img src={ creator?.image ? `${cdn}${creator.image.none200}` : '/creator-noimg.png' } />
       </div>
     </div>
     <div>

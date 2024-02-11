@@ -1,11 +1,12 @@
 import { SubscriptionLevel } from './subscription';
+import { Media } from './media';
 
 export interface Creator {
   login: string;
   name: string;
   isVerified: boolean;
-  image?: Record<string, any>[];
-  artwork?: Record<string, any>[];
+  image?: Media;
+  artwork?: Media;
   infoShort: string;
   infoLong?: string;
   maxLevel: SubscriptionLevel;

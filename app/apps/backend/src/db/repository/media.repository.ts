@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MediaDbModel, MEDIA_TYPE, MEDIA_TRANSFORMATION, CreatorDbModel } from '../model';
+import { MediaDbModel, MEDIA_TYPE, CreatorDbModel } from '../model';
 
 @Injectable()
 export class MediaDbRepository {
@@ -21,15 +21,9 @@ export class MediaDbRepository {
       .getOne();
   }
 
-  public async findByMediaUuid(mediaUuid: string): Promise<MediaDbModel[]> {
+  public async findByUuids(uuids: string[]): Promise<MediaDbModel[]> {
     return this.getBaseQuery()
-      .andWhere('media.mediaUuid = :mediaUuid', { mediaUuid })
-      .getMany();
-  }
-
-  public async findByMediaUuids(mediaUuids: string[]): Promise<MediaDbModel[]> {
-    return this.getBaseQuery()
-      .andWhere('media.mediaUuid IN (:...mediaUuids)', { mediaUuids })
+      .andWhere('media.uuid IN (:...uuids)', { uuids })
       .getMany();
   }
 
@@ -40,13 +34,14 @@ export class MediaDbRepository {
           p.level as post_level,
           m.*
       FROM post p
-          JOIN media m ON m.media_uuid = ANY (p.media_uuids::UUID[]) AND p.creator_uuid = '${creator.uuid}'
-      WHERE m.type = '${type}';
+          JOIN media m ON m.uuid = ANY (p.media_uuids::UUID[]) AND p.creator_uuid = '${creator.uuid}'
+      WHERE m.type = '${type}'
+      ORDER BY p.created_at DESC;
     `);
   }
 
-  public async create(mediaUuid: string, type: MEDIA_TYPE, transformation: MEDIA_TRANSFORMATION, width: number, height: number, file: string): Promise<MediaDbModel> {
-    const user = this.repository.create({ mediaUuid, type, transformation, width, height, file });
-    return this.repository.save(user);
+  public async create(uuid: string, type: MEDIA_TYPE, width: number, height: number, origin: string, none200?: string, blur200?: string): Promise<MediaDbModel> {
+    const media = this.repository.create({ uuid, type, width, height, origin, none200, blur200 });
+    return this.repository.save(media);
   }
 }

@@ -41,7 +41,7 @@ export class SubscriptionProcessor {
       }
       let media: MediaDbModel[] = [];
       if (mediaUuids?.length) {
-        media = await this.mediaService.getByMediaUuids(mediaUuids);
+        media = await this.mediaService.getByUuids(mediaUuids);
       }
 
       for (const subscription of subscriptions) {
@@ -54,8 +54,8 @@ export class SubscriptionProcessor {
           infoShort: creator.infoShort,
           infoLong: creator.infoLong,
           maxLevel: creator.maxLevel,
-          image: media.filter(item => item.mediaUuid === creator.image && item.transformation === 'none').map(item => _.pick(item, ['file', 'width', 'height'])),
-          artwork: media.filter(item => item.mediaUuid === creator.artwork && item.transformation === 'none').map(item => _.pick(item, ['file', 'width', 'height'])),
+          image: media.find(item => item.uuid === creator.image),
+          artwork: media.find(item => item.uuid === creator.artwork),
         });
       }
     }

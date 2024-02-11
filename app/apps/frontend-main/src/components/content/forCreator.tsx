@@ -1,12 +1,11 @@
 import { FC } from 'react';
-import { Post, PostType } from '@fans/types';
+import { Post, PostType, Media } from '@fans/types';
 import { DateTime } from 'luxon';
 import SVG from 'css.gg/icons/icons.svg';
 import classnames from 'classnames';
 import _ from 'lodash';
 
-import ContentPhoto from '@/components/content/photo.tsx';
-import ContentVideo from '@/components/content/video.tsx';
+import ContentMedia from '@/components/content/media.tsx';
 
 interface Props {
   data: Post;
@@ -60,12 +59,33 @@ interface PropsRender {
 }
 
 const ContentDefaultRender: FC<PropsRender> = ({ data }: PropsRender) => {
-  switch (data.type) {
-    case PostType.IMAGE:
-      return <ContentPhoto data={data}/>
-    case PostType.VIDEO:
-      return <ContentVideo data={data}/>
-    default:
-      return <></>;
+  const media: Media[] = [ ...(data?.content?.video || []), ...(data?.content?.image || []) ];
+
+  if (media?.length) {
+    return <div className="w-full">
+      {media.length === 1 && <ContentMedia data={media[0]} creator={true}/>}
+
+      {media.length === 2 && <div className="grid grid-cols-2 gap-1">
+        {media.map(item => <ContentMedia
+          key={item.uuid}
+          data={item}
+          creator={true}
+        />)}
+      </div>}
+
+      {media.length >= 3 && <div className="grid grid-cols-2 gap-1">
+        <div className="col-span-2">
+          <ContentMedia data={media[0]} creator={true}/>
+        </div>
+
+        {media.slice(1).map(item => <ContentMedia
+          key={item.uuid}
+          data={item}
+          creator={true}
+        />)}
+      </div>}
+    </div>;
   }
+
+  return <></>;
 };

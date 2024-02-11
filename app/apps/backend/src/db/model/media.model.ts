@@ -5,23 +5,10 @@ export enum MEDIA_TYPE {
   VIDEO = 'video',
 }
 
-export enum MEDIA_TRANSFORMATION {
-  NONE = 'none',
-  BLUR = 'blur',
-}
-
 @Entity('media')
 export class MediaDbModel {
   @PrimaryGeneratedColumn('uuid')
   uuid: string;
-
-  @Column({
-    name: 'media_uuid',
-    type: 'uuid',
-    nullable: false,
-    unique: false,
-  })
-  mediaUuid: string;
 
   @Column({
     name: 'type',
@@ -30,14 +17,6 @@ export class MediaDbModel {
     nullable: false,
   })
   type: MEDIA_TYPE;
-
-  @Column({
-    name: 'transformation',
-    type: 'enum',
-    enum: MEDIA_TRANSFORMATION,
-    nullable: false,
-  })
-  transformation: MEDIA_TRANSFORMATION;
 
   @Column({
     name: 'width',
@@ -54,11 +33,25 @@ export class MediaDbModel {
   height: number;
 
   @Column({
-    name: 'file',
+    name: 'origin',
     type: 'text',
     nullable: false,
   })
-  file: string;
+  origin: string;
+
+  @Column({
+    name: 'none_200',
+    type: 'text',
+    nullable: true,
+  })
+  none200: string;
+
+  @Column({
+    name: 'blur_200',
+    type: 'text',
+    nullable: true,
+  })
+  blur200: string;
 
   @Column({
     name: 'created_at',

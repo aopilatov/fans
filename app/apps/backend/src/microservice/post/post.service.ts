@@ -33,7 +33,7 @@ export class PostService {
     post.type = type;
     post.level = level;
     post.text = text;
-    post.mediaUuids = _.uniq((media || []).map(item => item.mediaUuid));
+    post.mediaUuids = _.uniq((media || []).map(item => item.uuid));
 
     return this.postDbRepository.edit(post);
   }

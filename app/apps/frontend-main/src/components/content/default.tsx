@@ -1,5 +1,5 @@
 import { FC, useRef } from 'react';
-import { Post, PostType } from '@fans/types';
+import { Media, Post, PostType } from '@fans/types';
 import SVG from 'css.gg/icons/icons.svg';
 import classnames from 'classnames';
 
@@ -7,16 +7,16 @@ import CreatorTip from '@/components/creator/tip.tsx';
 import ContentCreator from '@/components/content/creator.tsx';
 import ContentUnavailableSubscribe from '@/components/content/unavailableSubscribe.tsx';
 import ContentUnavailableLevel from '@/components/content/unavailableLevel.tsx';
-import ContentPhoto from '@/components/content/photo.tsx';
-import ContentVideo from '@/components/content/video.tsx';
+import ContentMedia from '@/components/content/media.tsx';
 
 interface Props {
   data: Post;
   showLinkToCreator?: boolean;
   subscribeCallback?: Function;
+  zoomable?: boolean;
 }
 
-const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true, subscribeCallback }: Props) => {
+const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true, subscribeCallback, zoomable }: Props) => {
   const isButtonsInactive = !data.subscription.isSubscribed || data.level > data.subscription.level;
   const sendTipRef = useRef<HTMLDialogElement>(null);
 
@@ -28,7 +28,7 @@ const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true, subscribeCa
     {data.content?.text && <div className="px-4 pt-4 text-sm font-medium text-slate-100">{data.content.text}</div>}
 
     { data.type !== PostType.TEXT && <div className="pt-4">
-      <ContentDefaultRender data={ data } subscribeCallback={ subscribeCallback } />
+      <ContentDefaultRender data={ data } subscribeCallback={ subscribeCallback } zoomable={ zoomable } />
     </div> }
 
     <div className="p-4 flex gap-4">
@@ -90,9 +90,10 @@ export default ContentDefault;
 interface PropsRender {
   data: Post;
   subscribeCallback?: Function;
+  zoomable?: boolean;
 }
 
-const ContentDefaultRender: FC<PropsRender> = ({ data, subscribeCallback }: PropsRender) => {
+const ContentDefaultRender: FC<PropsRender> = ({ data, subscribeCallback, zoomable }: PropsRender) => {
   if (!data.subscription.isSubscribed) {
     return <ContentUnavailableSubscribe data={data} subscribeCallback={subscribeCallback} />;
   }
@@ -101,12 +102,33 @@ const ContentDefaultRender: FC<PropsRender> = ({ data, subscribeCallback }: Prop
     return <ContentUnavailableLevel data={data}/>;
   }
 
-  switch (data.type) {
-    case PostType.IMAGE:
-      return <ContentPhoto data={data}/>
-    case PostType.VIDEO:
-      return <ContentVideo data={data}/>
-    default:
-      return <></>;
+  const media: Media[] = [ ...(data?.content?.video || []), ...(data?.content?.image || []) ];
+
+  if (media) {
+    return <div className="w-full">
+      {media.length === 1 && <ContentMedia data={media[0]} zoomable={ zoomable }/>}
+
+      {media.length === 2 && <div className="grid grid-cols-2 gap-1">
+        {media.map(item => <ContentMedia
+          key={item.uuid}
+          data={item}
+          zoomable={ zoomable }
+        />)}
+      </div>}
+
+      {media.length >= 3 && <div className="grid grid-cols-2 gap-1">
+        <div className="col-span-2">
+          <ContentMedia data={media[0]} zoomable={ zoomable }/>
+        </div>
+
+        {media.slice(1).map(item => <ContentMedia
+          key={item.uuid}
+          data={item}
+          zoomable={ zoomable }
+        />)}
+      </div>}
+    </div>;
   }
+
+  return <></>;
 };
