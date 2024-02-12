@@ -9,6 +9,10 @@ export class PostService {
     private readonly postDbRepository: PostDbRepository,
   ) {}
 
+  public async getByUuid(uuid: string): Promise<PostDbModel> {
+    return this.postDbRepository.getByUuid(uuid);
+  }
+
   public async listByCreator(creator: CreatorDbModel): Promise<PostDbModel[]> {
     return this.postDbRepository.getListByCreator(creator);
   }

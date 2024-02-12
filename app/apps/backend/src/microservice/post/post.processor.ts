@@ -9,6 +9,8 @@ import { CreatorService } from '@/microservice/creator';
 import { MediaService } from '@/microservice/media';
 import { SubscriptionService } from '@/microservice/subscription';
 import { SubscriptionLevelService } from '@/microservice/subscriptionLevel';
+import { LikeService } from '@/microservice/like';
+import { EventService } from '@/microservice/event';
 import { PostService } from './post.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -25,6 +27,8 @@ export class PostProcessor {
     @Inject(forwardRef(() => CreatorService)) private readonly creatorService: CreatorService,
     @Inject(forwardRef(() => SubscriptionService)) private readonly subscriptionService: SubscriptionService,
     @Inject(forwardRef(() => SubscriptionLevelService)) private readonly subscriptionLevelService: SubscriptionLevelService,
+    @Inject(forwardRef(() => LikeService)) private readonly likeService: LikeService,
+    @Inject(forwardRef(() => EventService)) private readonly eventService: EventService,
     private readonly configService: ConfigService,
     private readonly telegramService: TelegramService,
     private readonly userService: UserService,
@@ -120,7 +124,10 @@ export class PostProcessor {
       for (const post of posts) {
         if (post.creatorUuid !== creator?.uuid) creatorsUuids.push(post.creatorUuid);
       }
+
       const postCreators = creator ? [creator] : await this.creatorService.getByUuids(creatorsUuids);
+      const postLikes = user ? await this.likeService.getByPostsAndUser(posts, user) : [];
+
       const subscriptionLevels = user ? await this.subscriptionLevelService.getByCreators(postCreators) : null;
       const subscriptions = user ? await this.subscriptionService.getListForUserAndCreators(user, postCreators) : null;
 
@@ -137,6 +144,7 @@ export class PostProcessor {
           date: DateTime.fromJSDate(post.createdAt).toISO(),
           type: post.type,
           level: post.level,
+          isLiked: postLikes.filter(like => like.postUuid === post.uuid).length === 1,
           creator: {
             login: postCreator.login,
             name: postCreator.name,
@@ -399,5 +407,31 @@ export class PostProcessor {
     }
 
     return this.postService.edit(post, inputLevel, inputText, media);
+  }
+
+  @Process('export')
+  public async export(job: Job): Promise<Record<string, any>> {
+    try {
+      const encodedToken = _.get(job, 'data.token', '');
+      const decodedToken = jwtDecode<any>(encodedToken);
+      if (!decodedToken?.sub) return;
+
+      const user = await this.userService.getByUuid(decodedToken.sub);
+      if (!user) return;
+
+      const creatorLogin = _.get(job, 'data.creator');
+      if (!creatorLogin) return;
+
+      const creator = await this.creatorService.getByLogin(creatorLogin);
+      if (!creator) return;
+
+      const post = await this.postService.getByCreator(creator, _.get(job, 'data.uuid'));
+      if (!post) return;
+
+      const [postObj] = await this.getPostObjects([post], undefined, user);
+      await this.eventService.postExport(user, postObj);
+    } catch (e: unknown) {
+      console.log(e);
+    }
   }
 }

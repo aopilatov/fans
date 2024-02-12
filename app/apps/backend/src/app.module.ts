@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 import config from '@/config';
 
@@ -15,6 +16,7 @@ import {
   SubscriptionDbModel,
   SubscriptionLevelDbModel,
   PostDbModel,
+  LikeDbModel,
 } from '@/db/model';
 
 import { TelegramModule } from '@/microservice/telegram';
@@ -23,9 +25,15 @@ import { CreatorModule } from '@/microservice/creator';
 import { SubscriptionLevelModule } from '@/microservice/subscriptionLevel';
 import { AgencyModule } from '@/microservice/agency';
 import { PostModule } from '@/microservice/post';
+import { EventModule } from 'src/microservice/event';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 200,
+    }]),
+
     ConfigModule.forRoot({
       ignoreEnvFile: true,
       isGlobal: true,
@@ -69,7 +77,8 @@ import { PostModule } from '@/microservice/post';
           MediaDbModel,
           SubscriptionDbModel,
           SubscriptionLevelDbModel,
-          PostDbModel
+          PostDbModel,
+          LikeDbModel,
         ],
       }),
     }),
@@ -80,6 +89,7 @@ import { PostModule } from '@/microservice/post';
     SubscriptionLevelModule,
     AgencyModule,
     PostModule,
+    EventModule,
   ],
 })
 export class AppModule {}

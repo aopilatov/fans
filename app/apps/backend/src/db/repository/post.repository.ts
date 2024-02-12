@@ -16,6 +16,12 @@ export class PostDbRepository {
       .createQueryBuilder('post');
   }
 
+  public async getByUuid(uuid: string): Promise<PostDbModel> {
+    return this.getBaseQuery()
+      .andWhere('post.uuid = :uuid', { uuid })
+      .getOne();
+  }
+
   public async getListByCreator(creator: CreatorDbModel): Promise<PostDbModel[]> {
     return this.getBaseQuery()
       .andWhere('post.creatorUuid = :creatorUuid', { creatorUuid: creator.uuid })

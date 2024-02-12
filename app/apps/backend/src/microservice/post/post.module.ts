@@ -16,6 +16,8 @@ import { CreatorModule } from '@/microservice/creator';
 import { MediaModule } from '@/microservice/media';
 import { SubscriptionModule } from '@/microservice/subscription';
 import { SubscriptionLevelModule } from '@/microservice/subscriptionLevel';
+import { LikeModule } from '@/microservice/like';
+import { EventModule } from '@/microservice/event';
 
 import { PostInputCreate } from './post.input.create';
 
@@ -39,6 +41,8 @@ import { PostInputCreate } from './post.input.create';
     forwardRef(() => CreatorModule),
     forwardRef(() => SubscriptionModule),
     forwardRef(() => SubscriptionLevelModule),
+    forwardRef(() => LikeModule),
+    forwardRef(() => EventModule),
   ],
 
   providers: [

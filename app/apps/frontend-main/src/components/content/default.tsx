@@ -1,4 +1,6 @@
-import { FC, useRef } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
+// import { useDispatch } from 'react-redux'
+// import { Dispatch } from '@/stores';
 import { Media, Post, PostType } from '@fans/types';
 import SVG from 'css.gg/icons/icons.svg';
 import classnames from 'classnames';
@@ -8,6 +10,7 @@ import ContentCreator from '@/components/content/creator.tsx';
 import ContentUnavailableSubscribe from '@/components/content/unavailableSubscribe.tsx';
 import ContentUnavailableLevel from '@/components/content/unavailableLevel.tsx';
 import ContentMedia from '@/components/content/media.tsx';
+import api from '@/api';
 
 interface Props {
   data: Post;
@@ -17,8 +20,33 @@ interface Props {
 }
 
 const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true, subscribeCallback, zoomable }: Props) => {
+  // const dispatch = useDispatch<Dispatch>();
+
   const isButtonsInactive = !data.subscription.isSubscribed || data.level > data.subscription.level;
   const sendTipRef = useRef<HTMLDialogElement>(null);
+
+  const [isLiked, setIsLiked] = useState<boolean>(data.isLiked);
+
+  useEffect(() => {
+    if (data) setIsLiked(() => data.isLiked);
+  }, [data]);
+
+  const like = () => {
+    const newIsLiked = !isLiked;
+    setIsLiked(() => newIsLiked);
+
+    api.like.set(data.uuid).then((response: any) => {
+      if (response?.postUuid === data.uuid && response.isLiked !== newIsLiked) {
+        setIsLiked(() => response.isLiked);
+      }
+    });
+  };
+
+  // const exportPost = () => {
+  //   api.post.export(data.creator.login, data.uuid).then((response: any) => {
+  //     if (response?.success) dispatch.app.toast({ type: 'success', message: 'Post was sent to you as telegram message' });
+  //   });
+  // };
 
   return <div className="w-full shadow-lg rounded-lg bg-base-100 antialiased">
     <div className="px-4 pt-4">
@@ -33,10 +61,11 @@ const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true, subscribeCa
 
     <div className="p-4 flex gap-4">
       <button
+        onClick={ () => like() }
         className={classnames({
           'btn btn-sm btn-square btn-neutral': true,
-          'bg-gradient-to-r from-purple-500 to-pink-500': data.isLiked,
-          'text-white': data.isLiked,
+          'bg-gradient-to-r from-purple-500 to-pink-500': isLiked && !isButtonsInactive,
+          'text-white': true,
           'btn-disabled': isButtonsInactive,
         })}
       >
@@ -50,15 +79,17 @@ const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true, subscribeCa
         </svg>
       </button>
 
-      { data.type !== PostType.TEXT && <button className={classnames({
-        'btn btn-sm btn-neutral': true,
-        'btn-disabled': isButtonsInactive,
-      })}>
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor">
-          <use xlinkHref={SVG + `#gg-export`}/>
-        </svg>
-      </button> }
+      {/*{ data.type !== PostType.TEXT && <button*/}
+      {/*  onClick={ () => exportPost() }*/}
+      {/*  className={classnames({*/}
+      {/*    'btn btn-sm btn-neutral': true,*/}
+      {/*    'btn-disabled': isButtonsInactive,*/}
+      {/*  })}>*/}
+      {/*    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24"*/}
+      {/*         stroke="currentColor">*/}
+      {/*      <use xlinkHref={SVG + `#gg-export`}/>*/}
+      {/*    </svg>*/}
+      {/*</button> }*/}
 
       {!isButtonsInactive && <>
         <button

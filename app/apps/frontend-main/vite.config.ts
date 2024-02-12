@@ -8,7 +8,7 @@ import process from 'process';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const prefix = env?.VITE_PREFIX ? `/${env.VITE_PREFIX}` : '';
-  const cdn = env?.VITE_CDN || 'http://localhost:3002';
+  const cdn = env?.VITE_URL_CDN || 'http://localhost:3002';
 
   return {
     define: {
@@ -33,6 +33,12 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_URL_BACKEND || 'http://0.0.0.0:3000',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
+        },
+
+        '/cdn': {
+          target: env.VITE_URL_CDN || 'http://0.0.0.0:3002',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/cdn/, ''),
         },
       },
     },

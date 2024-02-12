@@ -114,6 +114,22 @@ export class PostController {
     }
   }
 
+  @UseGuards(UserGuard)
+  @Get(':creator/:uuid/export')
+  public async export(
+    @Headers() headers: Record<string, any>,
+    @Param('creator') creator: string,
+    @Param('uuid') uuid: string,
+    @Res() res: FastifyReply
+  ): Promise<Record<string, any>> {
+    const token = _.get(headers, 'x-authorization');
+    await this.postQueue.add('export', { token, creator, uuid });
+
+    return res.code(200)
+      .header('Content-Type', 'application/json')
+      .send({ success: true });
+  }
+
   @UseGuards(CreatorGuard)
   @Get('/full')
   public async listForCreator(

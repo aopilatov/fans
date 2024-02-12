@@ -9,4 +9,5 @@ export const methodsPost = (axios: Axios) => ({
   list: (login: string) => axios.get(`/post/${login}`),
   listPhotos: (login: string) => axios.get(`/post/${login}/photos`),
   listVideos: (login: string) => axios.get(`/post/${login}/videos`),
+  export: (login: string, uuid: string) => axios.get(`/post/${login}/${uuid}/export`),
 });

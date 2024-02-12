@@ -1,4 +1,5 @@
 import { Controller, Inject, Post, Req, forwardRef } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { TelegramHandlerManager } from '@/common/telegram';
 import { TelegramHandlerMain } from './telegram.handler.main';
 import { TelegramHandlerCreator } from './telegram.handler.creator';
@@ -10,6 +11,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import * as _ from 'lodash';
 
+@SkipThrottle()
 @Controller('/webhook')
 export class TelegramController {
   private readonly handler!: typeof TelegramHandlerManager;

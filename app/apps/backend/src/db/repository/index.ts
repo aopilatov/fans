@@ -7,3 +7,4 @@ export * from './media.repository';
 export * from './subscriptionLevel.repository';
 export * from './post.repository';
 export * from './subscription.repository';
+export * from './like.repository';

@@ -7,6 +7,7 @@ import { methodsCreator } from './creator.ts';
 import { methodsMedia } from './media.ts';
 import { methodsPost } from './post.ts';
 import { methodsSubscription } from './subscription.ts';
+import { methodsLike } from './like.ts';
 
 const instance = axios.create({ baseURL: '/api' });
 
@@ -33,6 +34,7 @@ const rest = {
   media: methodsMedia(instance),
   post: methodsPost(instance),
   subscription: methodsSubscription(instance),
+  like: methodsLike(instance),
 };
 
 export default rest;
