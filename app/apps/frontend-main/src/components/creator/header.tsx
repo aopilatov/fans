@@ -1,9 +1,9 @@
 import { FC, useEffect, useState } from 'react';
 import { Creator, Subscription } from '@fans/types';
 import { Link } from 'react-router-dom';
-import classnames from 'classnames';
+// import classnames from 'classnames';
 import SVG from 'css.gg/icons/icons.svg';
-import api from '@/api';
+// import api from '@/api';
 import _ from 'lodash';
 
 interface Props {
@@ -15,7 +15,7 @@ interface Props {
   subscribeCallback: Function;
 }
 
-const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, setIsLoading, subscribeCallback, setSubscription }: Props) => {
+const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, subscribeCallback, setSubscription }: Props) => {
   const cdn = _.get(window, 'cdn.value', '');
   const prefix = _.get(window, 'prefix.value', '');
 
@@ -27,18 +27,18 @@ const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, setIsLoadi
     }
   }, [subscription]);
 
-  const changeNotification = () => {
-    setIsLoading(() => true);
-    api.subscription.notification(creator.login)
-      .then((data: any) => {
-        if (data?.success) {
-          const sub = _.clone(subscription);
-          _.set(sub, 'isNotificationTurnedOn', data?.isNotificationTurnedOn || false);
-          setSubscription(() => sub);
-        }
-      })
-      .finally(() => setIsLoading(() => false));
-  };
+  // const changeNotification = () => {
+  //   setIsLoading(() => true);
+  //   api.subscription.notification(creator.login)
+  //     .then((data: any) => {
+  //       if (data?.success) {
+  //         const sub = _.clone(subscription);
+  //         _.set(sub, 'isNotificationTurnedOn', data?.isNotificationTurnedOn || false);
+  //         setSubscription(() => sub);
+  //       }
+  //     })
+  //     .finally(() => setIsLoading(() => false));
+  // };
 
   return <>
     { creator && subscription && <div className="w-full flex flex-col">
@@ -80,20 +80,20 @@ const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, setIsLoadi
                     : <span className="loading loading-spinner"></span>
                 }
               </button>
-              <button
-                onClick={ () => changeNotification() }
-                className={classnames({
-                  btn: true,
-                  'btn-outline': !subscription?.isNotificationTurnedOn,
-                  'btn-accent': true,
-                })}
-              >{!isLoading
-                ? <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                       stroke="currentColor">
-                  <use xlinkHref={SVG + `#gg-bell`}/>
-                </svg>
-                : <span className="loading loading-spinner"></span>
-              }</button>
+              {/*<button*/}
+              {/*  onClick={ () => changeNotification() }*/}
+              {/*  className={classnames({*/}
+              {/*    btn: true,*/}
+              {/*    'btn-outline': !subscription?.isNotificationTurnedOn,*/}
+              {/*    'btn-accent': true,*/}
+              {/*  })}*/}
+              {/*>{!isLoading*/}
+              {/*  ? <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24"*/}
+              {/*         stroke="currentColor">*/}
+              {/*    <use xlinkHref={SVG + `#gg-bell`}/>*/}
+              {/*  </svg>*/}
+              {/*  : <span className="loading loading-spinner"></span>*/}
+              {/*}</button>*/}
             </div>
           }
         </div>
