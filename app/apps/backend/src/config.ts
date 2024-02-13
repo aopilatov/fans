@@ -11,9 +11,9 @@ const config = {
   },
 
   url: {
-    frontend: process.env.URL_FRONTEND || 'https://9ac6-62-65-222-193.ngrok-free.app',
-    backend: process.env.URL_BACKEND || 'https://9ac6-62-65-222-193.ngrok-free.app/api',
-    cdn: process.env.URL_CDN || 'https://9ac6-62-65-222-193.ngrok-free.app/cdn',
+    frontend: process.env.URL_FRONTEND || 'https://a2d4-62-65-220-65.ngrok-free.app',
+    backend: process.env.URL_BACKEND || 'https://a2d4-62-65-220-65.ngrok-free.app/api',
+    cdn: process.env.URL_CDN || 'https://a2d4-62-65-220-65.ngrok-free.app/cdn',
   },
 
   db: {

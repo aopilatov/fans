@@ -10,6 +10,10 @@ export class LikeService {
     private readonly likeDbRepository: LikeDbRepository,
   ) {}
 
+  public async getCountByPost(post: PostDbModel): Promise<number> {
+    return this.likeDbRepository.getCountByPost(post);
+  }
+
   public async getByPostAndUser(post: PostDbModel, user: UserDbModel): Promise<LikeDbModel> {
     return this.likeDbRepository.getByPostAndUser(post, user);
   }

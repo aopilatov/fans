@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreatorDbModel, MEDIA_TYPE, MediaDbModel, POST_TYPE, PostDbModel } from '@/db/model';
+import { CreatorDbModel, MEDIA_TYPE, MediaDbModel, POST_TYPE, PostDbModel, UserDbModel } from '@/db/model';
 import * as _ from 'lodash';
 
 @Injectable()
@@ -34,6 +34,14 @@ export class PostDbRepository {
       .andWhere('post.creatorUuid = :creatorUuid', { creatorUuid: creator.uuid })
       .andWhere('post.uuid = :uuid', { uuid })
       .getOne();
+  }
+
+  public async getFeed(user: UserDbModel): Promise<PostDbModel[]> {
+    return this.getBaseQuery()
+      .leftJoin('subscription', 'subscription', 'subscription.creator_uuid = post.creatorUuid')
+      .andWhere('subscription.user_uuid = :userUuid', { userUuid: user.uuid })
+      .addOrderBy('post.createdAt', 'DESC')
+      .getMany();
   }
 
   public async create(creator: CreatorDbModel, type: POST_TYPE, level: number, text?: string, media?: MediaDbModel[]): Promise<PostDbModel> {

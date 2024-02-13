@@ -34,7 +34,7 @@ const PageProfile: FC = () => {
       </div> }
 
       { !isLoading && self && <>
-        <ProfileMoney balance={ self.balance } />
+        <ProfileMoney balances={ self.balances } />
         <ProfileStats subscriptions={ self.subscriptions } />
       </> }
     </div>

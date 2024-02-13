@@ -2,7 +2,7 @@ import { Controller, Post, Get, Res, Body, Param, UnauthorizedException, UseGuar
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { FastifyReply } from 'fastify';
-import { UserAuthResponse, CreatorAuthDto } from '@/microservice/user/user.types';
+import { UserAuthResponse, CreatorAuthDto, CreatorSearch } from '@/microservice/user/user.types';
 import { UserGuard } from '@/guard/user.guard';
 
 @Controller('/creator')
@@ -22,6 +22,20 @@ export class CreatorController {
     return res.code(200)
       .header('Content-Type', 'application/json')
       .send({ token: result });
+  }
+
+  @Post('/search')
+  @UseGuards(UserGuard)
+  public async search(@Body() body: CreatorSearch, @Res() res: FastifyReply) {
+    const job = await this.creatorQueue.add('search', body);
+    const result = await job.finished();
+    if (!result) {
+      throw new UnauthorizedException();
+    }
+
+    return res.code(200)
+      .header('Content-Type', 'application/json')
+      .send(result);
   }
 
   @Get(':login')

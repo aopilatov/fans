@@ -14,6 +14,30 @@ export class PostController {
   ) {}
 
   @UseGuards(UserGuard)
+  @Get('/feed')
+  public async feed(
+    @Headers() headers: Record<string, any>,
+    @Res() res: FastifyReply
+  ): Promise<any> {
+    try {
+      const token = _.get(headers, 'x-authorization');
+      const job = await this.postQueue.add('feed', { token });
+      const result = await job.finished();
+      if (!result) {
+        throw new Error('Can not fetch posts');
+      }
+
+      return res.code(200)
+        .header('Content-Type', 'application/json')
+        .send(result);
+    } catch (e: unknown) {
+      return res.code(_.get(e, 'code', 500))
+        .header('Content-Type', 'application/json')
+        .send({ message: _.get(e, 'message', 'Internal server error') });
+    }
+  }
+
+  @UseGuards(UserGuard)
   @Get(':creator')
   public async listForUser(
     @Headers() headers: Record<string, any>,

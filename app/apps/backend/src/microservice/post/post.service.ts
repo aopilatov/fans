@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PostDbRepository } from '@/db/repository';
-import { CreatorDbModel, MEDIA_TYPE, MediaDbModel, POST_TYPE, PostDbModel } from '@/db/model';
+import { CreatorDbModel, MEDIA_TYPE, MediaDbModel, POST_TYPE, PostDbModel, UserDbModel } from '@/db/model';
 import * as _ from 'lodash';
 
 @Injectable()
@@ -19,6 +19,10 @@ export class PostService {
 
   public async getByCreator(creator: CreatorDbModel, uuid: string): Promise<PostDbModel> {
     return this.postDbRepository.getOneByCreator(creator, uuid);
+  }
+
+  public async getFeed(user: UserDbModel): Promise<PostDbModel[]> {
+    return this.postDbRepository.getFeed(user);
   }
 
   public async create(creator: CreatorDbModel, level: number, text?: string, media?: MediaDbModel[]): Promise<PostDbModel> {

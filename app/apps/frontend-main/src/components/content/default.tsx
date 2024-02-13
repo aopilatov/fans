@@ -1,11 +1,11 @@
-import { FC, useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useState/*, useRef*/ } from 'react';
 // import { useDispatch } from 'react-redux'
 // import { Dispatch } from '@/stores';
 import { Media, Post, PostType } from '@fans/types';
 import SVG from 'css.gg/icons/icons.svg';
 import classnames from 'classnames';
 
-import CreatorTip from '@/components/creator/tip.tsx';
+// import CreatorTip from '@/components/creator/tip.tsx';
 import ContentCreator from '@/components/content/creator.tsx';
 import ContentUnavailableSubscribe from '@/components/content/unavailableSubscribe.tsx';
 import ContentUnavailableLevel from '@/components/content/unavailableLevel.tsx';
@@ -23,7 +23,7 @@ const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true, subscribeCa
   // const dispatch = useDispatch<Dispatch>();
 
   const isButtonsInactive = !data.subscription.isSubscribed || data.level > data.subscription.level;
-  const sendTipRef = useRef<HTMLDialogElement>(null);
+  // const sendTipRef = useRef<HTMLDialogElement>(null);
 
   const [isLiked, setIsLiked] = useState<boolean>(data.isLiked);
 
@@ -91,27 +91,27 @@ const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true, subscribeCa
       {/*    </svg>*/}
       {/*</button> }*/}
 
-      {!isButtonsInactive && <>
-        <button
-          onClick={() => sendTipRef.current.showModal()}
-          className={classnames({
-            'btn btn-sm btn-neutral': true,
-          })}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24"
-               stroke="currentColor">
-            <use xlinkHref={SVG + `#gg-dollar`}/>
-          </svg>
-          Send tip
-        </button>
+      {/*{!isButtonsInactive && <>*/}
+      {/*  <button*/}
+      {/*    onClick={() => sendTipRef.current.showModal()}*/}
+      {/*    className={classnames({*/}
+      {/*      'btn btn-sm btn-neutral': true,*/}
+      {/*    })}*/}
+      {/*  >*/}
+      {/*    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24"*/}
+      {/*         stroke="currentColor">*/}
+      {/*      <use xlinkHref={SVG + `#gg-dollar`}/>*/}
+      {/*    </svg>*/}
+      {/*    Send tip*/}
+      {/*  </button>*/}
 
-        <dialog ref={ sendTipRef } className="modal">
-          <CreatorTip selfRef={ sendTipRef } />
-          <form method="dialog" className="modal-backdrop">
-            <button>close</button>
-          </form>
-        </dialog>
-      </>}
+      {/*  <dialog ref={ sendTipRef } className="modal">*/}
+      {/*    <CreatorTip selfRef={ sendTipRef } />*/}
+      {/*    <form method="dialog" className="modal-backdrop">*/}
+      {/*      <button>close</button>*/}
+      {/*    </form>*/}
+      {/*  </dialog>*/}
+      {/*</>}*/}
     </div>
   </div>;
 };

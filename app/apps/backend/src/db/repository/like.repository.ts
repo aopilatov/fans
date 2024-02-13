@@ -15,6 +15,12 @@ export class LikeDbRepository {
       .createQueryBuilder('like');
   }
 
+  public async getCountByPost(post: PostDbModel): Promise<number> {
+    return this.getBaseQuery()
+      .andWhere('like.postUuid = :postUuid', { postUuid: post.uuid })
+      .getCount();
+  }
+
   public async getByPostAndUser(post: PostDbModel, user: UserDbModel): Promise<LikeDbModel> {
     return this.getBaseQuery()
       .andWhere('like.postUuid = :postUuid', { postUuid: post.uuid })

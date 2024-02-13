@@ -46,6 +46,24 @@ export class CreatorDbRepository {
       .getOne();
   }
 
+  public async search(value: string, limit: number = 10): Promise<CreatorDbModel[]> {
+    return this.getBaseQuery()
+      .orWhere('levenshtein(creator.login, :value) <= 3', { value })
+      .orWhere('levenshtein(creator.name, :value) <= 3', { value })
+      .addOrderBy('levenshtein(creator.login, :value)', 'ASC')
+      .addOrderBy('levenshtein(creator.name, :value)', 'ASC')
+      .limit(limit)
+      .getMany();
+  }
+
+  public async findRandom(limit: number = 10): Promise<CreatorDbModel[]> {
+    return this.getBaseQuery()
+      .addOrderBy('RANDOM()')
+      .limit(limit)
+      .getMany();
+  }
+
+
   public async findByUserAndLogin(user: UserDbModel, login: string): Promise<CreatorDbModel> {
     return this.getBaseQuery()
       .andWhere('creator.userUuid = :userUuid', { userUuid: user.uuid })

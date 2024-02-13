@@ -1,7 +1,8 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { UserDbModel } from '@/db/model';
+import { BALANCE_CURRENCY, UserDbModel } from '@/db/model';
 import { UserDbRepository } from '@/db/repository';
 import { TelegramService } from '@/microservice/telegram';
+import { BalanceService } from '@/microservice/balance';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'node:crypto';
 import * as _ from 'lodash';
@@ -10,6 +11,7 @@ import * as _ from 'lodash';
 export class UserService {
   constructor(
     @Inject(forwardRef(() => TelegramService)) private readonly telegramService: TelegramService,
+    @Inject(forwardRef(() => BalanceService)) private readonly balanceService: BalanceService,
     private readonly configService: ConfigService,
     private readonly userDbRepository: UserDbRepository,
   ) {}
@@ -42,6 +44,8 @@ export class UserService {
     if (!user) {
       const login = _.get(data, 'chat.username', '');
       user = await this.userDbRepository.create(userTgId, login, crypto.randomBytes(64).toString('hex'));
+      await this.balanceService.create(user, BALANCE_CURRENCY.TON);
+      await this.balanceService.create(user, BALANCE_CURRENCY.USDT);
     }
 
     return user;

@@ -17,6 +17,7 @@ import {
   SubscriptionLevelDbModel,
   PostDbModel,
   LikeDbModel,
+  BalanceDbModel,
 } from '@/db/model';
 
 import { TelegramModule } from '@/microservice/telegram';
@@ -25,7 +26,8 @@ import { CreatorModule } from '@/microservice/creator';
 import { SubscriptionLevelModule } from '@/microservice/subscriptionLevel';
 import { AgencyModule } from '@/microservice/agency';
 import { PostModule } from '@/microservice/post';
-import { EventModule } from 'src/microservice/event';
+import { EventModule } from '@/microservice/event';
+import { BalanceModule } from '@/microservice/balance';
 
 @Module({
   imports: [
@@ -79,6 +81,7 @@ import { EventModule } from 'src/microservice/event';
           SubscriptionLevelDbModel,
           PostDbModel,
           LikeDbModel,
+          BalanceDbModel,
         ],
       }),
     }),
@@ -90,6 +93,7 @@ import { EventModule } from 'src/microservice/event';
     AgencyModule,
     PostModule,
     EventModule,
+    BalanceModule,
   ],
 })
 export class AppModule {}

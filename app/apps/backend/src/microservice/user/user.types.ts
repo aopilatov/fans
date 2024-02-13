@@ -16,3 +16,8 @@ export class CreatorAuthDto extends UserAuthDto {
   @IsUUID()
   creator: string;
 }
+
+export class CreatorSearch {
+  @IsString()
+  search: string;
+}

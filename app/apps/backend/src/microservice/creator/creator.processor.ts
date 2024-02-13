@@ -5,7 +5,7 @@ import { Job } from 'bull';
 import { InlineKeyboardButton } from 'node-telegram-bot-api';
 import { TelegramService } from '@/microservice/telegram';
 import { UserService } from '@/microservice/user';
-import { MediaDbModel, UserDbModel } from '@/db/model';
+import { CreatorDbModel, MediaDbModel, UserDbModel } from '@/db/model';
 import { CreatorDbRepository } from '@/db/repository';
 import { AuthService } from '@/microservice/auth';
 import { AgencyAdminService } from '@/microservice/agencyAdmin';
@@ -21,6 +21,7 @@ import { CreatorInputChangeInfoShort } from './creator.input.changeInfoShort';
 import { CreatorInputChangeInfoLong } from './creator.input.changeInfoLong';
 import { CreatorInputChangeImage } from './creator.input.changeImage';
 import { CreatorInputChangeArtwork } from './creator.input.changeArtwork';
+import { jwtDecode } from 'jwt-decode';
 
 @Processor('creator')
 export class CreatorProcessor {
@@ -377,5 +378,48 @@ export class CreatorProcessor {
     _.set(data, 'artwork', artwork);
 
     return data;
+  }
+
+  @Process('search')
+  public async search(job: Job): Promise<Record<string, any>> {
+    const wordToSearch = _.get(job, 'data.search');
+    let creators!: CreatorDbModel[];
+
+    if (!wordToSearch || !wordToSearch?.length) {
+      creators = await this.creatorDbRepository.findRandom(10);
+    } else {
+      creators = await this.creatorDbRepository.search(wordToSearch);
+    }
+
+    const data = [];
+    if (creators.length > 0) {
+      const mediaUuids: string[] = [];
+      for (const creator of creators) {
+        if (creator?.image) mediaUuids.push(creator.image);
+        if (creator?.artwork) mediaUuids.push(creator.artwork);
+      }
+      let media: MediaDbModel[] = [];
+      if (mediaUuids?.length) {
+        media = await this.mediaService.getByUuids(mediaUuids);
+      }
+
+      for (const creator of creators) {
+        data.push({
+          login: creator.login,
+          name: creator.name,
+          isVerified: creator.isVerified,
+          infoShort: creator.infoShort,
+          infoLong: creator.infoLong,
+          maxLevel: creator.maxLevel,
+          image: media.find(item => item.uuid === creator.image) || null,
+          artwork: media.find(item => item.uuid === creator.artwork) || null,
+        });
+      }
+    }
+
+    return {
+      count: data.length,
+      listOfCreators: data,
+    };
   }
 }

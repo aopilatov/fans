@@ -15,9 +15,9 @@ const PageAuthCreator: FC = () => {
 
   useEffect(() => {
     if (import.meta.env.DEV && uuid === 'dev' && creator === 'dev' && check === 'dev') {
-      uuid = '94d259ec-755e-4029-9614-3a6d88da46ef';
-      creator = '0523fda3-154d-44cf-bf43-ee63f0f847a8';
-      check = 'ceaa4c88869684e6efa4f7e8f438219f20022a4733579d430053545f65a515ec62d5a05b875b1005f0775e6282e55d0e11262fa13eaf95966e380439c4d6d5cb';
+      uuid = '8b77a8ec-f4ed-4936-ad95-6816050f4ce0';
+      check = '00deb6e8154858d3757426933f1fa3b6d9550f53d2a86000954fab93226d456b3d0e3db98ca70832830f84893fedbc7b8c47fcdfa446f84384cc33cceaa8afd8';
+      creator = '1ea97949-447b-4247-a5e0-0e4e9dde8212';
     }
 
     getToken();

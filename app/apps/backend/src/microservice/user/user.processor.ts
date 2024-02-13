@@ -4,6 +4,7 @@ import { Job } from 'bull';
 import { UserDbRepository } from '@/db/repository';
 import { AuthService } from '@/microservice/auth';
 import { SubscriptionService } from '@/microservice/subscription';
+import { BalanceService } from '@/microservice/balance';
 import { UserService } from './user.service';
 import { jwtDecode } from 'jwt-decode';
 import * as _ from 'lodash';
@@ -12,6 +13,7 @@ import * as _ from 'lodash';
 export class UserProcessor {
   constructor(
     @Inject(forwardRef(() => SubscriptionService)) private readonly subscriptionService: SubscriptionService,
+    @Inject(forwardRef(() => BalanceService)) private readonly balanceService: BalanceService,
     private readonly authService: AuthService,
     private readonly userDbRepository: UserDbRepository,
     private readonly userService: UserService,
@@ -42,14 +44,16 @@ export class UserProcessor {
     const user = await this.userService.getByUuid(decodedToken?.sub);
     if (!user) return;
 
+    const balances = await this.balanceService.getByUser(user);
+
     return {
       subscriptions: {
         count: await this.subscriptionService.getCountForUser(user),
       },
-      balance: {
-        amount: 12,
-        currency: 'USDT',
-      },
+      balances: balances.map(item => ({
+        amount: item.value,
+        currency: item.currency.toUpperCase(),
+      })),
     };
   }
 }

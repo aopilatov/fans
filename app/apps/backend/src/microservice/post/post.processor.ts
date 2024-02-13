@@ -173,6 +173,23 @@ export class PostProcessor {
     return data;
   }
 
+  @Process('feed')
+  public async feed(job: Job): Promise<Record<string, any>[]> {
+    try {
+      const encodedToken = _.get(job, 'data.token', '');
+      const decodedToken = jwtDecode<any>(encodedToken);
+      if (!decodedToken?.sub) return;
+
+      const user = await this.userService.getByUuid(decodedToken.sub);
+      if (!user) return;
+
+      const posts = await this.postService.getFeed(user);
+      return this.getPostObjects(posts, undefined, user);
+    } catch (e: unknown) {
+      console.log(e);
+    }
+  }
+
   @Process('listForUser')
   public async listForUser(job: Job): Promise<Record<string, any>[]> {
     try {

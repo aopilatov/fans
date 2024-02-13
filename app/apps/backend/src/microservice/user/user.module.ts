@@ -9,6 +9,7 @@ import { UserDbRepository } from '@/db/repository';
 import { UserDbModel } from '@/db/model';
 import { AuthModule } from '@/microservice/auth';
 import { SubscriptionModule } from '@/microservice/subscription';
+import { BalanceModule } from '@/microservice/balance';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SubscriptionModule } from '@/microservice/subscription';
     TypeOrmModule.forFeature([UserDbModel]),
     forwardRef(() => TelegramModule),
     forwardRef(() => SubscriptionModule),
+    forwardRef(() => BalanceModule),
     AuthModule,
   ],
   controllers: [UserController],
