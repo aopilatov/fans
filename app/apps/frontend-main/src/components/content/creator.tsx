@@ -30,7 +30,7 @@ interface PropsData {
 }
 
 const ContentCreatorData: FC<PropsData> = ({ creator }: PropsData) => {
-  const cdn = _.get(window, 'cdn.value', '');
+  const cdn = import.meta.env.VITE_URL_CDN || '';
 
   return <>{ creator && <div className="flex items-center gap-4">
     <div className="avatar">

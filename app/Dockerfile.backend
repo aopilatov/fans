@@ -1,0 +1,34 @@
+FROM redhat/ubi9-minimal:9.1.0
+
+RUN microdnf update -y \
+    && microdnf upgrade -y \
+    && microdnf install -y nano \
+        vim \
+        wget \
+        openssl \
+        gcc \
+        g++ \
+        lz4 \
+        yum-utils
+
+COPY --from=mwader/static-ffmpeg:6.1.1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:6.1.1 /ffprobe /usr/local/bin/
+
+RUN curl -sL https://rpm.nodesource.com/setup_20.x | bash -
+
+RUN microdnf update -y \
+    && microdnf install -y nodejs \
+    && node -v
+
+WORKDIR /app
+COPY . .
+
+RUN npm i -g pnpm ts-node && \
+    pnpm i
+
+WORKDIR /app/apps/backend
+
+RUN pnpm run build
+
+EXPOSE 3000
+CMD ["pnpm", "run", "start:prod-nest"]

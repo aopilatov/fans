@@ -16,7 +16,7 @@ interface Props {
 }
 
 const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, subscribeCallback, setSubscription }: Props) => {
-  const cdn = _.get(window, 'cdn.value', '');
+  const cdn = import.meta.env.VITE_URL_CDN || '';
   const prefix = _.get(window, 'prefix.value', '');
 
   const [infoLongIsShowed, setInfoLongIsShowed] = useState<boolean>(false);

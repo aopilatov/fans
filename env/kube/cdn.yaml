@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cdn
+spec:
+  selector:
+    matchLabels:
+      app: cdn
+  template:
+    metadata:
+      labels:
+        app: cdn
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: cdn-config
+        - name: storage
+          persistentVolumeClaim:
+            claimName: volume-cdn-claim
+      containers:
+        - name: cdn
+          image: nginx:1.19-alpine
+          resources:
+            limits:
+              memory: "1024Mi"
+              cpu: "1000m"
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: /etc/nginx/conf.d
+              name: config
+            - mountPath: /var/upload_files
+              name: storage
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cdn-service
+spec:
+  selector:
+    app: cdn
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

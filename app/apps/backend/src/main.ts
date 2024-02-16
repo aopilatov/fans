@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import fastifyCsrf from '@fastify/csrf-protection';
 import { fastify } from 'fastify';
 import { AppModule } from './app.module';
 import { randomUUID } from 'node:crypto';
@@ -14,13 +13,12 @@ import middlewareOnResponse from './middleware/onResponse.middleware';
 const fastifyInstance = fastify({
   disableRequestLogging: true,
   genReqId: () => randomUUID(),
-  logger: { transport: { target: process.env?.NODE_ENV === 'prod' ? null : 'pino-pretty' } },
+  logger: process.env?.NODE_ENV === 'prod' ?  true : { transport: { target: 'pino-pretty' } },
 });
 
 middlewareOnRequest(fastifyInstance);
 middlewareOnResponse(fastifyInstance);
 fastifyInstance.register(multiPart, { limits: { files: 20, fileSize: 1073741824 } });
-fastifyInstance.register(fastifyCsrf);
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(fastifyInstance as any), {

@@ -6,7 +6,7 @@ import { Media } from '@fans/types';
 import { jwtDecode } from 'jwt-decode';
 import api from '@/api';
 import _ from 'lodash';
-import * as FormData from 'form-data';
+import FormData from 'form-data';
 import classnames from 'classnames';
 import SVG from 'css.gg/icons/icons.svg';
 import ReactPlayer from 'react-player';
@@ -17,7 +17,7 @@ interface Props {
 
 const ContentEdit: FC<Props> = ({ uuid }: Props) => {
   const prefix = _.get(window, 'prefix.value', '');
-  const cdn = _.get(window, 'cdn.value', '');
+  const cdn = import.meta.env.VITE_URL_CDN || '';
 
   const inputImagesRef = useRef<HTMLInputElement>(null);
   const inputVideosRef = useRef<HTMLInputElement>(null);

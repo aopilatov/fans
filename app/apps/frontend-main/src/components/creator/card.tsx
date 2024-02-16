@@ -8,7 +8,7 @@ interface Props {
 }
 
 const CreatorCard: FC<Props> = ({ creator }: Props) => {
-  const cdn = _.get(window, 'cdn.value', '');
+  const cdn = import.meta.env.VITE_URL_CDN || '';
   const prefix = _.get(window, 'prefix.value', '');
 
   return <Link to={ `${prefix}/creator/${creator.login}` }>

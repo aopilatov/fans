@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+      - 65.108.85.114-65.108.85.114
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  POSTGRES_HOST: postgres-service
+  POSTGRES_DB: fans
+  POSTGRES_PORT: "5432"
+  postgresql.conf: |
+    listen_addresses = '*'
+    data_directory = '/var/lib/postgresql/data'
+    max_wal_senders = 10
+    max_connections = 100
+    max_worker_processes = 8
+    max_parallel_workers_per_gather = 4
+    max_parallel_maintenance_workers = 4
+    max_parallel_workers = 8
+    max_wal_size = '1024 MB'
+    min_wal_size = '512 MB'
+    wal_level = replica
+    wal_compression = on
+    wal_buffers = -1
+    wal_recycle = on
+    superuser_reserved_connections = 3
+    huge_pages = off
+    shared_preload_libraries = 'pg_stat_statements'
+    track_io_timing = on
+    track_functions = pl
+    synchronous_commit = off
+    checkpoint_timeout = '15 min'
+    checkpoint_completion_target = 0.9
+    shared_buffers = '2048 MB'
+    effective_cache_size = '6 GB'
+    work_mem = '32 MB'
+    maintenance_work_mem = '320 MB'
+    checkpoint_completion_target = 0.9
+    random_page_cost = 1.25
+    effective_io_concurrency = 100
+    archive_mode = on
+    archive_command = '/bin/true'
+    bgwriter_delay = 200ms
+    bgwriter_lru_maxpages = 100
+    bgwriter_lru_multiplier = 2.0
+    bgwriter_flush_after = 0
+    parallel_leader_participation = on
+    enable_partitionwise_join = on 
+    enable_partitionwise_aggregate = on
+    jit = on
+    max_slot_wal_keep_size = '1000 MB'
+    track_wal_io_timing = on
+    maintenance_io_concurrency = 100
+  extra.sh: |
+    #!/bin/sh
+    postgres -D /var/lib/postgresql
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  NODE_ENV: prod
+  APP_UPLOAD_DIR: /app/apps/backend/upload_files
+  URL_FRONTEND: https://tgapp.fans
+  URL_BACKEND: https://tgapp.fans/api
+  URL_CDN: https://tgapp.fans/cdn
+  REDIS_HOST: redis-service
+  REDIS_PORT: "6379"
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+data:
+  NODE_ENV: production
+  VITE_URL_CDN: https://tgapp.fans/cdn
+  VITE_SERVICE_CDN: http://cdn-service:80
+  VITE_SERVICE_BACKEND: http://backend-main-service:3000
+
+---
+
+apiVersion: v1
+data:
+  default.conf: "server {\n\tlisten 80;\n\tserver_name localhost;\n\n\troot /var/upload_files/;\n\n\tlocation
+    / {\n    autoindex off;\n  }\n}\n"
+kind: ConfigMap
+metadata:
+  name: cdn-config

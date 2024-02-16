@@ -19,7 +19,7 @@ interface Props {
 
 const CreatorContent: FC<Props> = ({ creator, posts, photos, videos, showLinkToCreator = true, subscribeCallback }: Props) => {
   const prefix = _.get(window, 'prefix.value', '');
-  const cdn = _.get(window, 'cdn.value', '');
+  const cdn = import.meta.env.VITE_URL_CDN || '';
 
   const location = useLocation();
 

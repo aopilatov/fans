@@ -11,6 +11,7 @@
     "migrate:dev": "pnpm run build && pnpx typeorm migration:run -d ./dist/config.js",
     "migrate:prod": "pnpx typeorm migration:run -d ./dist/config.js",
     "start:dev": "nest start --debug --watch",
+    "start:prod-nest": "nest start",
     "start:prod": "node dist/main",
     "test:prod": "jest",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"

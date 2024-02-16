@@ -1,0 +1,9 @@
+.nx
+node_modules
+
+backend/dist
+backend/files
+backend/node_modules
+
+frontend-main/dist
+frontend-main/node_modules

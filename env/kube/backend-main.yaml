@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-main
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-main
+  template:
+    metadata:
+      labels:
+        app: backend-main
+    spec:
+      volumes:
+        - name: uploader
+          persistentVolumeClaim:
+            claimName: volume-cdn-claim
+      imagePullSecrets:
+        - name: ghrc-auth
+      containers:
+        - name: backend-main
+          image: ghcr.io/aopilatov/fans-backend:1.0.4
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: backend-secret
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: postgres-secret
+            - configMapRef:
+                name: postgres-config
+          resources:
+            requests:
+              memory: "1024Mi"
+              cpu: "1000m"
+            limits:
+              memory: "2024Mi"
+              cpu: "2000m"
+          volumeMounts:
+            - mountPath: /app/apps/backend/upload_files
+              name: uploader
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-main-service
+spec:
+  selector:
+    app: backend-main
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-main
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-main
+  template:
+    metadata:
+      labels:
+        app: frontend-main
+    spec:
+      imagePullSecrets:
+        - name: ghrc-auth
+      containers:
+        - name: frontend-main
+          image: ghcr.io/aopilatov/fans-frontend:1.0.7
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: frontend-config
+          resources:
+            requests:
+              memory: "1024Mi"
+              cpu: "1000m"
+            limits:
+              memory: "2024Mi"
+              cpu: "2000m"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-main-service
+spec:
+  selector:
+    app: frontend-main
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      volumes:
+        - name: redisdb
+          persistentVolumeClaim:
+            claimName: volume-redis-claim
+      containers:
+        - name: redis
+          image: redis:7.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6379
+          env:
+            - name: MASTER
+              value: "true"
+          resources:
+            requests:
+              memory: "1024Mi"
+              cpu: "1000m"
+            limits:
+              memory: "2048Mi"
+              cpu: "2000m"
+          volumeMounts:
+            - mountPath: /var/lib/redis/data
+              name: redisdb
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+spec:
+  selector:
+    app: redis
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379

@@ -12,7 +12,7 @@ interface Props {
 }
 
 const ContentMedia: FC<Props> = ({ data, creator, zoomable }: Props) => {
-  const cdn = _.get(window, 'cdn.value', '');
+  const cdn = import.meta.env.VITE_URL_CDN || '';
 
   if (data && data.type === 'image') {
     if (creator) {

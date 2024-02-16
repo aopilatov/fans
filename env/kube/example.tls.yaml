@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/tls
+metadata:
+  name: tgapp.fans-tls
+data:
+  tls.crt: <BASE64>
+  tls.key: <BASE64>

@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: volume-pg-claim
+        - name: postgreconf
+          configMap:
+            name: postgres-config
+      containers:
+        - name: postgres
+          image: postgres:16.2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+            - configMapRef:
+                name: postgres-config
+          resources:
+            requests:
+              memory: "8192Mi"
+              cpu: "4000m"
+            limits:
+              memory: "16384Mi"
+              cpu: "8000m"
+          volumeMounts:
+            - name: postgredb
+              mountPath: /var/lib/postgresql/data
+            - name: postgreconf
+              mountPath: /var/lib/postgresql/postgresql.conf
+              subPath: postgresql.conf
+            - name: postgreconf
+              mountPath: /docker-entrypoint-initdb.d/extra.sh
+              subPath: extra.sh
+          args:
+            - "-c"
+            - "config_file=/var/lib/postgresql/postgresql.conf"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  selector:
+    app: postgres
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
