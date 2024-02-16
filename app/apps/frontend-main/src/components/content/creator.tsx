@@ -30,12 +30,10 @@ interface PropsData {
 }
 
 const ContentCreatorData: FC<PropsData> = ({ creator }: PropsData) => {
-  const cdn = import.meta.env.VITE_URL_CDN || '';
-
   return <>{ creator && <div className="flex items-center gap-4">
     <div className="avatar">
       <div className="rounded-full w-12">
-        <img src={ creator?.image ? `${cdn}${creator.image.none200}` : '/creator-noimg.png' } />
+        <img src={ creator?.image ? creator.image.none200 : '/creator-noimg.png' } />
       </div>
     </div>
     <div>

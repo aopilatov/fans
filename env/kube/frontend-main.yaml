@@ -16,7 +16,7 @@ spec:
         - name: ghrc-auth
       containers:
         - name: frontend-main
-          image: ghcr.io/aopilatov/fans-frontend:1.0.7
+          image: ghcr.io/aopilatov/fans-frontend:1.0.13
           imagePullPolicy: Always
           ports:
             - containerPort: 3000

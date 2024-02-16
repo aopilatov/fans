@@ -17,7 +17,6 @@ interface Props {
 
 const ContentEdit: FC<Props> = ({ uuid }: Props) => {
   const prefix = _.get(window, 'prefix.value', '');
-  const cdn = import.meta.env.VITE_URL_CDN || '';
 
   const inputImagesRef = useRef<HTMLInputElement>(null);
   const inputVideosRef = useRef<HTMLInputElement>(null);
@@ -222,7 +221,7 @@ const ContentEdit: FC<Props> = ({ uuid }: Props) => {
           {index + 1} / {images.length}
 
           <img
-            src={`${cdn}${item.none200}`}
+            src={item.none200}
             className="rounded-box max-w-80"
             alt={ item.uuid }
           />
@@ -281,8 +280,8 @@ const ContentEdit: FC<Props> = ({ uuid }: Props) => {
           {index + 1} / {videos.length}
 
           <ReactPlayer
-            url={`${cdn}${item.origin}`}
-            light={`${cdn}${item.none200}`}
+            url={item.origin}
+            light={item.none200}
             className="rounded-box max-w-80"
             muted={true}
             loop={false}

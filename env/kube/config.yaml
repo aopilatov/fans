@@ -91,7 +91,6 @@ metadata:
   name: frontend-config
 data:
   NODE_ENV: production
-  VITE_URL_CDN: https://tgapp.fans/cdn
   VITE_SERVICE_CDN: http://cdn-service:80
   VITE_SERVICE_BACKEND: http://backend-main-service:3000
 

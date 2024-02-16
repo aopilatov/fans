@@ -8,7 +8,6 @@ interface Props {
 }
 
 const CreatorCard: FC<Props> = ({ creator }: Props) => {
-  const cdn = import.meta.env.VITE_URL_CDN || '';
   const prefix = _.get(window, 'prefix.value', '');
 
   return <Link to={ `${prefix}/creator/${creator.login}` }>
@@ -16,12 +15,12 @@ const CreatorCard: FC<Props> = ({ creator }: Props) => {
       className="bshadow-xl rounded-lg bg-contain bg-center"
       style={{
         height: _.floor(window.innerWidth / 562 * 180),
-        backgroundImage: `url(${creator?.artwork ? cdn + creator.artwork.origin : '/artwork-noimg.png'})`,
+        backgroundImage: `url(${creator?.artwork ? creator.artwork.origin : '/artwork-noimg.png'})`,
       }}
     >
       <div className="w-full h-full flex items-center">
         <img
-          src={ creator?.image ? `${cdn}${creator.image.none200}` : '/creator-noimg.png' }
+          src={ creator?.image ? creator.image.none200 : '/creator-noimg.png' }
           className="bg-contain bg-center h-2/3 border-4 rounded-full mx-2"
           alt={ creator.login }
         />

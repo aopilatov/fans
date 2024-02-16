@@ -3,14 +3,12 @@ import { FastifyReply } from 'fastify';
 import { FileFieldsInterceptor, MemoryStorageFile, UploadedFiles } from '@blazity/nest-file-fastify';
 import { CreatorGuard } from '@/guard/creator.guard';
 import { MediaService } from './media.service';
-import { MediaDbRepository } from '@/db/repository';
 import * as _ from 'lodash';
 
 @Controller('/media')
 export class MediaController {
   constructor(
     private readonly mediaService: MediaService,
-    private readonly mediaDbRepository: MediaDbRepository,
   ) {}
 
   @UseGuards(CreatorGuard)
@@ -24,7 +22,7 @@ export class MediaController {
     @Res() res: FastifyReply,
   ): Promise<any> {
     const images: string[] = await Promise.all(_.get(files, 'image', []).map(item => this.mediaService.imageFromUpload(item.buffer)));
-    const mediaRows = await this.mediaDbRepository.findByUuids(images);
+    const mediaRows = await this.mediaService.getByUuids(images);
 
     return res.code(200)
       .header('Content-Type', 'application/json')
@@ -44,7 +42,7 @@ export class MediaController {
     let videos = _.get(files, 'video', []);
     videos = videos.filter(item => ['video/mp4', 'video/quicktime'].includes(item.mimetype));
     videos = await Promise.all(videos.map(item => this.mediaService.videoFromUpload(item.buffer)));
-    const mediaRows = await this.mediaDbRepository.findByUuids(videos);
+    const mediaRows = await this.mediaService.getByUuids(videos);
 
     return res.code(200)
       .header('Content-Type', 'application/json')

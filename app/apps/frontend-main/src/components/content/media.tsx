@@ -12,12 +12,10 @@ interface Props {
 }
 
 const ContentMedia: FC<Props> = ({ data, creator, zoomable }: Props) => {
-  const cdn = import.meta.env.VITE_URL_CDN || '';
-
   if (data && data.type === 'image') {
     if (creator) {
       return <img
-        src={`${cdn}/${data?.none200}`}
+        src={data?.none200}
         className="w-full"
         alt="photo"
       />;
@@ -25,7 +23,7 @@ const ContentMedia: FC<Props> = ({ data, creator, zoomable }: Props) => {
 
     if (!data?.none200) {
       return <img
-        src={`${cdn}/${data?.blur200}`}
+        src={data?.blur200}
         className="w-full"
         alt="photo"
       />;
@@ -33,9 +31,9 @@ const ContentMedia: FC<Props> = ({ data, creator, zoomable }: Props) => {
 
     if (zoomable) {
       return <PhotoProvider>
-        <PhotoView src={`${cdn}/${data.origin}`}>
+        <PhotoView src={data.origin}>
           <img
-            src={`${cdn}/${data.none200}`}
+            src={data.none200}
             className="w-full"
             alt="photo"
           />
@@ -44,7 +42,7 @@ const ContentMedia: FC<Props> = ({ data, creator, zoomable }: Props) => {
     }
 
     return <img
-      src={`${cdn}/${data?.none200}`}
+      src={data?.none200}
       className="w-full"
       alt="photo"
     />;
@@ -53,15 +51,15 @@ const ContentMedia: FC<Props> = ({ data, creator, zoomable }: Props) => {
   if (data && data.type === 'video') {
     if (!data?.origin) {
       return <img
-        src={`${cdn}/${data.blur200}`}
+        src={data.blur200}
         className="w-full"
         alt="photo"
       />;
     }
 
     return <ReactPlayer
-      url={`${cdn}/${data.origin}`}
-      light={`${cdn}/${data?.none200 || data.origin}`}
+      url={data.origin}
+      light={data?.none200 || data.origin}
       width="100%"
       height="200px"
       muted={true}

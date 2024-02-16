@@ -172,12 +172,25 @@ export class MediaService {
     return media.uuid;
   }
 
+  private formatMediaUrl(media: MediaDbModel): MediaDbModel {
+    if (media?.origin) media.origin = this.configService.get<string>('url.cdn') + media.origin;
+    if (media?.none200) media.none200 = this.configService.get<string>('url.cdn') + media.none200;
+    if (media?.blur200) media.blur200 = this.configService.get<string>('url.cdn') + media.blur200;
+    return media;
+  }
+
+  private formatMediasUrl(media: MediaDbModel[]): MediaDbModel[] {
+    return media.map(item => this.formatMediaUrl(item));
+  }
+
   public async getByUuid(uuid: string): Promise<MediaDbModel> {
-    return this.mediaDbRepository.findByUuid(uuid);
+    const media = await this.mediaDbRepository.findByUuid(uuid);
+    return this.formatMediaUrl(media);
   }
 
   public async getByUuids(uuids: string[]): Promise<MediaDbModel[]> {
-    return this.mediaDbRepository.findByUuids(uuids);
+    const media = await this.mediaDbRepository.findByUuids(uuids);
+    return this.formatMediasUrl(media);
   }
 
   public async getByCreator(creator: CreatorDbModel, type: MEDIA_TYPE): Promise<Record<string, any>[]> {
@@ -185,14 +198,18 @@ export class MediaService {
   }
 
   public convertObjectToModel(obj: Record<string, any>): MediaDbModel {
+    const origin = _.get(obj, 'origin');
+    const none200 = _.get(obj, 'none_200');
+    const blur200 = _.get(obj, 'blur_200');
+
     return {
       uuid: _.get(obj, 'uuid'),
       type: _.get(obj, 'type'),
       width: _.get(obj, 'width'),
       height: _.get(obj, 'height'),
-      origin: _.get(obj, 'origin'),
-      none200: _.get(obj, 'none_200'),
-      blur200: _.get(obj, 'blur_200'),
+      origin: origin ? this.configService.get<string>('url.cdn') + origin : null,
+      none200: none200 ? this.configService.get<string>('url.cdn') + none200 : null,
+      blur200: blur200 ? this.configService.get<string>('url.cdn') + blur200 : null,
       createdAt: DateTime.fromISO(_.get(obj, 'created_at')).toJSDate(),
     };
   }

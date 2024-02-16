@@ -19,7 +19,6 @@ interface Props {
 
 const CreatorContent: FC<Props> = ({ creator, posts, photos, videos, showLinkToCreator = true, subscribeCallback }: Props) => {
   const prefix = _.get(window, 'prefix.value', '');
-  const cdn = import.meta.env.VITE_URL_CDN || '';
 
   const location = useLocation();
 
@@ -83,7 +82,7 @@ const CreatorContent: FC<Props> = ({ creator, posts, photos, videos, showLinkToC
               key={item.uuid}
             >
               <img
-                src={ `${cdn}/${item?.none200 || item.blur200}` }
+                src={ item?.none200 || item.blur200 }
                 className="w-full"
                 alt="photo"
               />
@@ -102,7 +101,7 @@ const CreatorContent: FC<Props> = ({ creator, posts, photos, videos, showLinkToC
               key={item.uuid}
             >
               <img
-                src={ `${cdn}/${item?.none200 || item.blur200}` }
+                src={ item?.none200 || item.blur200 }
                 className="w-full"
                 alt="videos"
               />

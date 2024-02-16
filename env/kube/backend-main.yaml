@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: backend-main
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: backend-main
@@ -20,7 +20,7 @@ spec:
         - name: ghrc-auth
       containers:
         - name: backend-main
-          image: ghcr.io/aopilatov/fans-backend:1.0.4
+          image: ghcr.io/aopilatov/fans-backend:1.0.6
           imagePullPolicy: Always
           ports:
             - containerPort: 3000

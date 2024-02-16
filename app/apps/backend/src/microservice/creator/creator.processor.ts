@@ -21,7 +21,6 @@ import { CreatorInputChangeInfoShort } from './creator.input.changeInfoShort';
 import { CreatorInputChangeInfoLong } from './creator.input.changeInfoLong';
 import { CreatorInputChangeImage } from './creator.input.changeImage';
 import { CreatorInputChangeArtwork } from './creator.input.changeArtwork';
-import { jwtDecode } from 'jwt-decode';
 
 @Processor('creator')
 export class CreatorProcessor {

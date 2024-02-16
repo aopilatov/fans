@@ -28,6 +28,7 @@ RUN npm i -g pnpm ts-node && \
 
 WORKDIR /app/apps/backend
 
+RUN rm -rf ../frontend-main
 RUN pnpm run build
 
 EXPOSE 3000

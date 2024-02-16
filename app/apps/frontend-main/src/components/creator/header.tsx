@@ -16,7 +16,6 @@ interface Props {
 }
 
 const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, subscribeCallback, setSubscription }: Props) => {
-  const cdn = import.meta.env.VITE_URL_CDN || '';
   const prefix = _.get(window, 'prefix.value', '');
 
   const [infoLongIsShowed, setInfoLongIsShowed] = useState<boolean>(false);
@@ -44,7 +43,7 @@ const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, subscribeC
     { creator && subscription && <div className="w-full flex flex-col">
       <div className="w-full">
         <img
-          src={ creator?.artwork ? `${cdn}${creator.artwork.origin}` : '/artwork-noimg.png' }
+          src={ creator?.artwork ? creator.artwork.origin : '/artwork-noimg.png' }
           className="w-full"
           alt="alt"
         />
@@ -54,7 +53,7 @@ const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, subscribeC
           style={{ marginTop: '-40px' }}
         >
           <img
-            src={ creator?.image ? `${cdn}${creator.image.none200}` : '/creator-noimg.png' }
+            src={ creator?.image ? creator.image.none200 : '/creator-noimg.png' }
             className="border-4 rounded-full w-24"
             alt="ava"
           />
