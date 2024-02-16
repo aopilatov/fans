@@ -267,7 +267,7 @@ export class PostProcessor {
 
           return _.omit(item, ['origin', 'none_200'])
         })
-        .map(this.mediaService.convertObjectToModel);
+        .map(item => this.mediaService.convertObjectToModel(item));
 
       for (const index in media) {
         const objRaw = mediaRaw.find(itemRaw => itemRaw.uuid === media[index].uuid);
@@ -309,7 +309,7 @@ export class PostProcessor {
 
           return _.omit(item, ['origin', 'none_200'])
         })
-        .map(this.mediaService.convertObjectToModel);
+        .map(item => this.mediaService.convertObjectToModel(item));
 
       for (const index in media) {
         const objRaw = mediaRaw.find(itemRaw => itemRaw.uuid === media[index].uuid);
