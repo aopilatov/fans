@@ -1,5 +1,5 @@
 import { FC, MutableRefObject, useState } from 'react';
-import { useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux';
 import { Dispatch } from '@/stores';
 
 interface Props {

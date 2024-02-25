@@ -21,7 +21,6 @@ const CreatorContent: FC<Props> = ({ creator, posts, photos, videos, showLinkToC
   const prefix = _.get(window, 'prefix.value', '');
 
   const location = useLocation();
-
   const [activeTab, setActiveTab] = useState<Tabs>('posts');
 
   useEffect(() => {

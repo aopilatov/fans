@@ -45,6 +45,6 @@ export const app = createModel<RootModel>()({
 
       dispatch.app.toastAdd({ uuid, ...toast });
       setTimeout(() => dispatch.app.toastRemove(uuid), 2000);
-    }
+    },
   }),
 });

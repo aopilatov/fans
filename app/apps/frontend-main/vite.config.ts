@@ -27,13 +27,13 @@ export default defineConfig(({ mode }) => {
       port: 3001,
       proxy: {
         '/api': {
-          target: process.env.VITE_SERVICE_BACKEND || 'http://0.0.0.0:3000',
+          target: process.env.VITE_SERVICE_BACKEND || 'http://localhost:3000',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
 
         '/cdn': {
-          target: process.env.VITE_SERVICE_CDN || 'http://0.0.0.0:3002',
+          target: process.env.VITE_SERVICE_CDN || 'http://localhost:3002',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/cdn/, ''),
         },
@@ -45,13 +45,13 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       proxy: {
         '/api': {
-          target: process.env.VITE_SERVICE_BACKEND || 'http://0.0.0.0:3000',
+          target: process.env.VITE_SERVICE_BACKEND || 'http://localhost:3000',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
 
         '/cdn': {
-          target: process.env.VITE_SERVICE_CDN || 'http://0.0.0.0:3002',
+          target: process.env.VITE_SERVICE_CDN || 'http://localhost:3002',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/cdn/, ''),
         },

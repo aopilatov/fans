@@ -151,7 +151,7 @@ export class CreatorProcessor {
           reply_markup: {
             inline_keyboard: keyboard,
           },
-        })
+        });
       }
     } catch (e: unknown) {
       console.log(e);

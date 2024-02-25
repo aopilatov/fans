@@ -2,16 +2,17 @@ import axios from 'axios';
 import { store } from '@/stores';
 import _ from 'lodash';
 
-import { methodsUser } from './user.ts';
-import { methodsCreator } from './creator.ts';
-import { methodsMedia } from './media.ts';
-import { methodsPost } from './post.ts';
-import { methodsSubscription } from './subscription.ts';
-import { methodsLike } from './like.ts';
+import { methodsUser } from './queries/user';
+import { methodsCreator } from './queries/creator';
+import { methodsMedia } from './queries/media';
+import { methodsPost } from './queries/post';
 
-const instance = axios.create({ baseURL: '/api' });
+import { methodsSubscription } from './queries/subscription';
+import { methodsLike } from './queries/like';
 
-instance.interceptors.request.use((req) => {
+const api = axios.create({ baseURL: '/api' });
+
+api.interceptors.request.use((req) => {
   if (store.getState().auth.token) {
     req.headers['X-Authorization'] = store.getState().auth.token;
   }
@@ -21,7 +22,7 @@ instance.interceptors.request.use((req) => {
   console.error(err);
 });
 
-instance.interceptors.response.use((res) => {
+api.interceptors.response.use((res) => {
   return _.get(res, 'data', {});
 }, (err) => {
   const data = _.get(err, 'response.data', {});
@@ -29,12 +30,12 @@ instance.interceptors.response.use((res) => {
 });
 
 const rest = {
-  user: methodsUser(instance),
-  creator: methodsCreator(instance),
-  media: methodsMedia(instance),
-  post: methodsPost(instance),
-  subscription: methodsSubscription(instance),
-  like: methodsLike(instance),
+  user: methodsUser(api),
+  creator: methodsCreator(api),
+  media: methodsMedia(api),
+  post: methodsPost(api),
+  subscription: methodsSubscription(api),
+  like: methodsLike(api),
 };
 
 export default rest;

@@ -10,7 +10,7 @@ import ContentCreator from '@/components/content/creator.tsx';
 import ContentUnavailableSubscribe from '@/components/content/unavailableSubscribe.tsx';
 import ContentUnavailableLevel from '@/components/content/unavailableLevel.tsx';
 import ContentMedia from '@/components/content/media.tsx';
-import api from '@/api';
+import { useLikeSet } from '@/api/queries/like';
 
 interface Props {
   data: Post;
@@ -26,6 +26,7 @@ const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true, subscribeCa
   // const sendTipRef = useRef<HTMLDialogElement>(null);
 
   const [isLiked, setIsLiked] = useState<boolean>(data.isLiked);
+  const likeMutation = useLikeSet();
 
   useEffect(() => {
     if (data) setIsLiked(() => data.isLiked);
@@ -34,11 +35,10 @@ const ContentDefault: FC<Props> = ({ data, showLinkToCreator = true, subscribeCa
   const like = () => {
     const newIsLiked = !isLiked;
     setIsLiked(() => newIsLiked);
-
-    api.like.set(data.uuid).then((response: any) => {
-      if (response?.postUuid === data.uuid && response.isLiked !== newIsLiked) {
-        setIsLiked(() => response.isLiked);
-      }
+    likeMutation.mutate({
+      uuid: data.uuid,
+      onSuccess: setIsLiked,
+      newIsLiked,
     });
   };
 
