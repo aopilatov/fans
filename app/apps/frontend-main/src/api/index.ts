@@ -2,12 +2,12 @@ import axios from 'axios';
 import { store } from '@/stores';
 import _ from 'lodash';
 
-import { methodsUser } from './user.ts';
-import { methodsCreator } from './creator.ts';
-import { methodsMedia } from './media.ts';
-import { methodsPost } from './post.ts';
-import { methodsSubscription } from './subscription.ts';
-import { methodsLike } from './like.ts';
+import { methodsUser } from './queries/user';
+import { methodsCreator } from './queries/creator';
+import { methodsMedia } from './queries/media';
+import { methodsPost } from './queries/post';
+import { methodsSubscription } from './queries/subscription';
+import { methodsLike } from './queries/like';
 
 const instance = axios.create({ baseURL: '/api' });
 

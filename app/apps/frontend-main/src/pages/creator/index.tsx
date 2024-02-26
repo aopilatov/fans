@@ -1,18 +1,21 @@
 import { FC, useEffect, useState } from 'react';
 import { store } from '@/stores';
 import { Creator } from '@fans/types';
-import api from '@/api';
 
 import AppLayout from '@/layouts/app.layout.tsx';
 import CreatorCard from '@/components/creator/card.tsx';
+
+import { useCreatorSearch } from '@/api/queries/creator';
 
 const PageCreator: FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [results, setResults] = useState<Creator[]>(null);
 
+  const searchMutation = useCreatorSearch();
+
   useEffect(() => {
     store.dispatch({ type: 'app/setMenuBack', payload: false });
-    loadResults();
+    searchMutation.mutate({ search: '', setIsLoading, setResults });
   }, []);
 
   const typeWatch = function () {
@@ -20,22 +23,11 @@ const PageCreator: FC = () => {
     return function(cb: (val: string) => void, ms: number){
       clearTimeout (timer);
       timer = setTimeout(cb, ms);
-    }
+    };
   }();
 
   const onSearchValueChange = (val: string) => {
-    loadResults(val);
-  };
-
-  const loadResults = (search?: string) => {
-    setIsLoading(() => true);
-    api.creator.search(search)
-      .then((data: any) => {
-        setResults(() => data?.listOfCreators || []);
-      })
-      .finally(() => {
-        setIsLoading(() => false);
-      })
+    searchMutation.mutate({ search: val, setIsLoading, setResults });
   };
 
   return <AppLayout>

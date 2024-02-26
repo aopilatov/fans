@@ -66,7 +66,7 @@ const ContentMedia: FC<Props> = ({ data, creator, zoomable }: Props) => {
       loop={false}
       playing={false}
       controls={ true }
-    />
+    />;
   }
 };
 

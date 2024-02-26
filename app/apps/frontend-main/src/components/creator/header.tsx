@@ -1,43 +1,21 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 import { Creator, Subscription } from '@fans/types';
 import { Link } from 'react-router-dom';
-// import classnames from 'classnames';
 import SVG from 'css.gg/icons/icons.svg';
-// import api from '@/api';
 import _ from 'lodash';
 
 interface Props {
   creator: Creator;
   subscription: Subscription;
-  setSubscription: Function;
+  // setSubscription: Function;
   isLoading: boolean;
   setIsLoading: Function;
   subscribeCallback: Function;
 }
 
-const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, subscribeCallback, setSubscription }: Props) => {
+const CreatorHeader: FC<Props> = ({ creator, subscription, isLoading, subscribeCallback }: Props) => {
   const prefix = _.get(window, 'prefix.value', '');
-
   const [infoLongIsShowed, setInfoLongIsShowed] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (subscription) {
-      setSubscription(() => subscription);
-    }
-  }, [subscription]);
-
-  // const changeNotification = () => {
-  //   setIsLoading(() => true);
-  //   api.subscription.notification(creator.login)
-  //     .then((data: any) => {
-  //       if (data?.success) {
-  //         const sub = _.clone(subscription);
-  //         _.set(sub, 'isNotificationTurnedOn', data?.isNotificationTurnedOn || false);
-  //         setSubscription(() => sub);
-  //       }
-  //     })
-  //     .finally(() => setIsLoading(() => false));
-  // };
 
   return <>
     { creator && subscription && <div className="w-full flex flex-col">

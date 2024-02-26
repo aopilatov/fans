@@ -1,68 +1,45 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Subscription } from '@fans/types';
-import api from '@/api';
 
 import AppLayout from '@/layouts/app.layout.tsx';
-import _ from 'lodash';
+import { useSubscriptionChange, useSubscriptionGetOne } from '@/api/queries/subscription';
 
 const PageSubscriptionsCreator: FC = () => {
   const { creator } = useParams();
-
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [subscription, setSubscription] = useState<Subscription>(null);
-
-  const getSubscription = () => {
-    setIsLoading(() => true);
-    api.subscription.getOne(creator)
-      .then((data: any) => {
-        setSubscription(() => data);
-      })
-      .finally(() => {
-        setIsLoading(() => false);
-      });
-  };
+  const { data, isLoading: isUserLoading } = useSubscriptionGetOne(creator);
+  const mutation = useSubscriptionChange();
 
   const changeSubscription = (level?: number) => {
-    setIsLoading(() => true);
-    api.subscription.change(creator, level)
-      .then((data: any) => {
-        if (data?.success) {
-          const sub = _.clone(subscription);
-          _.set(sub, 'level', data?.level || 1);
-          setSubscription(() => sub);
-        }
-      })
-      .finally(() => setIsLoading(() => false));
+    mutation.mutate({
+      data: { login: creator, level },
+      setIsLoading,
+    });
   };
 
-  useEffect(() => {
-    if (creator) getSubscription();
-  }, [creator]);
-
   return <AppLayout>
-    { isLoading && <div className="w-full flex justify-center">
+    { (isUserLoading || isLoading) && <div className="w-full flex justify-center">
       <span className="loading loading-spinner loading-lg"></span>
     </div> }
 
-    { !isLoading && subscription && <div className="p-4 flex flex-col gap-4">
+    { !isUserLoading && !isLoading && data && <div className="p-4 flex flex-col gap-4">
       <div className="stats shadow">
         <div className="stat">
           <div className="stat-title">My plan</div>
           <div className="stat-value">{
-            subscription.level === 1
+            data.level === 1
               ? <>Free</>
-              : <>{subscription.prices.find(item => item.level === subscription.level).price} USDT</>
+              : <>{data.prices.find(item => item.level === data.level).price} USDT</>
           }</div>
-          {subscription.level > 1 && <div className="stat-desc">per month</div>}
+          {data.level > 1 && <div className="stat-desc">per month</div>}
         </div>
       </div>
 
-      { subscription.prices.length > 1 && <div className="flex flex-col gap-4">
+      { data.prices.length > 1 && <div className="flex flex-col gap-4">
         <div className="text-lg font-medium">All subscription plans</div>
 
-        { subscription.prices
-          .filter(item => item.level > subscription.level)
+        { data.prices
+          .filter(item => item.level > data.level)
           .map(item => <div
             key={ item.level }
             className="w-full stats shadow"
@@ -83,8 +60,8 @@ const PageSubscriptionsCreator: FC = () => {
           </div>)
         }
 
-        {subscription.prices
-          .filter(item => item.level < subscription.level)
+        {data.prices
+          .filter(item => item.level < data.level)
           .map(item => <div
             key={ item.level }
             className="w-full stats shadow"

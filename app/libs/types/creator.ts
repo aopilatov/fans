@@ -10,4 +10,8 @@ export interface Creator {
   infoShort: string;
   infoLong?: string;
   maxLevel: SubscriptionLevel;
+  levels: {
+    level: number;
+    price: number;
+  }[]
 }

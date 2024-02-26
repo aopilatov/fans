@@ -1,28 +1,11 @@
-import { FC, useEffect, useState } from 'react';
-import { Creator } from '@fans/types';
-import api from '@/api';
+import { FC } from 'react';
 
 import AppLayout from '@/layouts/app.layout.tsx';
 import CreatorCard from '@/components/creator/card.tsx';
+import { useSubscriptionGetForUser } from '@/api/queries/subscription';
 
 const PageSubscriptions: FC = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [subscriptions, setSubscriptions] = useState<Creator[]>(null);
-
-  useEffect(() => {
-    getList();
-  }, []);
-
-  const getList = async () => {
-    setIsLoading(() => true);
-    api.subscription.getForUser()
-      .then((data: any) => {
-        setSubscriptions(() => data?.listOfCreators || [])
-      })
-      .finally(() => {
-        setIsLoading(() => false);
-      })
-  };
+  const { data, isLoading } = useSubscriptionGetForUser();
 
   return <AppLayout>
     <div className="w-full h-full p-4 flex flex-col gap-4">
@@ -30,11 +13,11 @@ const PageSubscriptions: FC = () => {
         <span className="loading loading-spinner loading-lg"></span>
       </div> }
 
-      { !isLoading && !subscriptions?.length && <div className="w-full h-full flex justify-center items-center">
+      { !isLoading && !data?.length && <div className="w-full h-full flex justify-center items-center">
         You don't have subscriptions
       </div> }
 
-      { !isLoading && (subscriptions || []).map(item => <CreatorCard
+      { !isLoading && (data || []).map(item => <CreatorCard
         key={ item.login }
         creator={ item }
       />) }

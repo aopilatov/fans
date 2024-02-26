@@ -11,9 +11,9 @@ const config = {
   },
 
   url: {
-    frontend: process.env.URL_FRONTEND || 'https://a2d4-62-65-220-65.ngrok-free.app',
-    backend: process.env.URL_BACKEND || 'https://a2d4-62-65-220-65.ngrok-free.app/api',
-    cdn: process.env.URL_CDN || 'https://a2d4-62-65-220-65.ngrok-free.app/cdn',
+    frontend: process.env.URL_FRONTEND || 'https://f853-195-8-50-121.ngrok-free.app',
+    backend: process.env.URL_BACKEND || 'https://f853-195-8-50-121.ngrok-free.app/api',
+    cdn: process.env.URL_CDN || 'https://f853-195-8-50-121.ngrok-free.app/cdn',
   },
 
   db: {
@@ -30,9 +30,9 @@ const config = {
   },
 
   telegram: {
-    botMain: process.env.TELEGRAM_BOT_MAIN_TOKEN || '6899381215:AAEtXqjQKUs4AUKSk2DSl-fJ-IWVdpF0Juo',
-    botCreator: process.env.TELEGRAM_BOT_CREATOR_TOKEN || '6642601944:AAGUXQrovRT83caZMY9VjzLaMczZ7kq3NzA',
-    botAgency: process.env.TELEGRAM_BOT_AGENCY_TOKEN || '6970627762:AAHtTZ7Prr4Cdjfx8ud3NRByDuBlH3bhoCM',
+    botMain: process.env.TELEGRAM_BOT_MAIN_TOKEN || '6819358802:AAE9AmeuJmVe8tiN9pm2zf6U5WEfOyPtRdk',
+    botCreator: process.env.TELEGRAM_BOT_CREATOR_TOKEN || '6722320898:AAFZPE1adbDS8EHjt4uRSuxj3_NO6rCM5Fg',
+    botAgency: process.env.TELEGRAM_BOT_AGENCY_TOKEN || '6777854501:AAHs41ElQlaK6qzSQbif7IKhz-9g1eFR4Jk',
   },
 };
 

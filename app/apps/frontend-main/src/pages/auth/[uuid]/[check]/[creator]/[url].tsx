@@ -1,39 +1,23 @@
 import { FC, useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { store } from '@/stores';
-import api from '@/api';
-import _ from 'lodash';
+import { useParams } from 'react-router-dom';
+import { useCreatorAuth } from '@/api/queries/creator';
 
 const PageAuthCreator: FC = () => {
-  const navigate = useNavigate();
-  const prefix = _.get(window, 'prefix.value', '');
-
-  let { uuid, creator, check, url } = useParams();
-
+  const param = useParams();
+  let { uuid, creator, check } = param;
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>(null);
 
+  const mutation = useCreatorAuth();
+
   useEffect(() => {
     if (import.meta.env.DEV && uuid === 'dev' && creator === 'dev' && check === 'dev') {
-      uuid = '8b77a8ec-f4ed-4936-ad95-6816050f4ce0';
-      check = '00deb6e8154858d3757426933f1fa3b6d9550f53d2a86000954fab93226d456b3d0e3db98ca70832830f84893fedbc7b8c47fcdfa446f84384cc33cceaa8afd8';
-      creator = '1ea97949-447b-4247-a5e0-0e4e9dde8212';
+      uuid = '83d3d816-deed-43c1-916c-47ed54cac846';
+      check = '0aa8220e7b77874585147b45b7817d07d1a8445a9352b33de7e91cb99eddbb44646bf2c6485c37b37e70a3dd6881109d598f3634a5c79586784b63840f7f5033';
+      creator = '956417c0-f5b7-4974-a763-4e0888c82aa6';
     }
-
-    getToken();
+    mutation.mutate({ data: { uuid, check, creator }, url: param.url, onError: setError, setIsLoading });
   }, []);
-
-  const getToken = () => {
-    setIsLoading(() => true);
-    api.creator.auth(uuid, creator, check)
-      .then(data => {
-        const token = _.get(data, 'token');
-        store.dispatch({ type: 'auth/setToken', payload: token });
-        navigate(`${prefix}/${decodeURIComponent(url)}`); // creator%2Fmanage%2Fpost%2Fnew
-      })
-      .catch(err => setError(() => err.message))
-      .finally(() => setIsLoading(() => false));
-  };
 
   return <div className="w-full h-full flex justify-center items-center">
     { isLoading && <>Loading...</> }

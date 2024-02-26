@@ -24,7 +24,7 @@ const App: FC = () => {
     };
   }, []);
 
-  return <Suspense fallback={<div className="w-screen h-screen flex justify-center items-center">
+  return <Suspense fallback={<div className="w-full h-screen flex justify-center items-center">
     <span className="loading loading-spinner text-info"></span>
   </div>}>
     {toasts?.length > 0 && <div className="fixed top-0 left-0 z-50" key={ toastsState }>
