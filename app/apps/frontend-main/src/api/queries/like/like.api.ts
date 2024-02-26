@@ -7,8 +7,5 @@ type QueryPayload = {
 }
 
 export const methodsLike = (axios: Axios) => ({
-  set: ({ uuid }: QueryPayload) => axios.patch<{
-    postUuid: string,
-    isLiked: boolean
-  }>(`/like/${uuid}`),
+  set: ({ uuid }: QueryPayload): Promise<{postUuid: string, isLiked: boolean}> => axios.patch(`/like/${uuid}`),
 });

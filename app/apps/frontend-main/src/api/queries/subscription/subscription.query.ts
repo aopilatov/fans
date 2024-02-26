@@ -53,16 +53,12 @@ export function useNotificationChange () {
     onSuccess: (data) => {
       queryClient.setQueryData(
         [QUERY_SUBSCRIPTION_ONE],
-        (cash: AxiosResponse<Subscription>) => {
-          const sub = _.clone(data);
-          _.set(sub, 'isNotificationTurnedOn', data?.isNotificationTurnedOn || false);
-          return ({
+        (cash: AxiosResponse<Subscription>) => ({
             ...cash,
-            data: sub,
-          });
-        },
+            isNotificationTurnedOn: data?.isNotificationTurnedOn || false,
+          }),
       );
     },
-    onSettled: (_, __, { onSettled }) => onSettled(),
+    // onSettled: (_, __, { onSettled }) => onSettled(),
   });
 }
